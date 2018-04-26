@@ -15,6 +15,12 @@ namespace FoundaryMediaPlayer.Platforms.Windows
         public const string CLSID_IUnknown = "00000000-0000-0000-C000-000000000046";
         public static Guid IUnknown { get; } = new Guid(CLSID_IUnknown);
 
+        public const string CLSID_IMixerPinConfig = "593CDDE1-0759-11d1-9E69-00C04FD7C15B";
+        public static Guid IMixerPinConfig { get; } = new Guid(CLSID_IMixerPinConfig);
+
+        public const string CLSID_IMixerPinConfig2 = "EBF47182-8764-11d1-9E69-00C04FD7C15B";
+        public static Guid IMixerPinConfig2 { get; } = new Guid(CLSID_IMixerPinConfig);
+
         public const string CLSID_Proxy = "17CCA71B-ECD7-11D0-B908-00A0C9223196";
         public static Guid Proxy { get; } = new Guid(CLSID_Proxy);
 
@@ -35,6 +41,9 @@ namespace FoundaryMediaPlayer.Platforms.Windows
 
         public const string CLSID_MadVR = "E1A8B82A-32CE-4B0D-BE0D-AA68C772E423";
         public static Guid MadVR { get; } = new Guid(CLSID_MadVR);
+
+        public const string CLSID_MadVRAllocatorPresenter = "C7ED3100-9002-4595-9DCA-B30B30413429";
+        public static Guid MadVRAllocatorPresenter { get; } = new Guid(CLSID_MadVRAllocatorPresenter);
 
         public const string CLSID_Sync = "FA10746C-9B63-4B6C-BC49-FC300EA5F256";
         public static Guid Sync { get; } = new Guid(CLSID_Sync);
@@ -150,6 +159,16 @@ namespace FoundaryMediaPlayer.Platforms.Windows
             }
 
             return Guid.Empty;
+        }
+
+        /// <summary>
+        /// Gets the CLSID for the specified object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <returns>The <see cref="Guid"/> of the object.</returns>
+        public static Guid GetCLSID(object obj)
+        {
+            return obj.GetType().GetTypeInfo().GUID;
         }
     }
 }

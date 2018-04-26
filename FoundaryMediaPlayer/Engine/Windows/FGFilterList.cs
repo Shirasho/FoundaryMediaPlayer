@@ -6,10 +6,7 @@ using System.Threading.Tasks;
 
 namespace FoundaryMediaPlayer.Engine.Windows
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class FGFilter
+    public class FGFilterList
     {
     }
 }

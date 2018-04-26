@@ -319,7 +319,7 @@ namespace FoundaryMediaPlayer.Engine.Windows
                 }
                 else
                 {
-                    _GraphBuilder = new DirectShowGraph();
+                    _GraphBuilder = new FGGraph();
                 }
             }
             else if (dvdData != null)
