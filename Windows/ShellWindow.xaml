@@ -1,0 +1,192 @@
+﻿<windows:MediaOutputWindowBase x:Class="FoundaryMediaPlayer.Windows.ShellWindow"
+                    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:prism="http://prismlibrary.com/"
+                    xmlns:windows="clr-namespace:FoundaryMediaPlayer.Windows"
+                    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+                    xmlns:controls="clr-namespace:FoundaryMediaPlayer.Controls"
+                    xmlns:properties="clr-namespace:FoundaryMediaPlayer.Properties"
+                    xmlns:models="clr-namespace:FoundaryMediaPlayer.Controls.Models"
+                    xmlns:dragDrop="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
+                    prism:ViewModelLocator.AutoWireViewModel="True"
+                    mah:DialogParticipation.Register="{Binding}"
+                    GlowBrush="{DynamicResource AccentColorBrush}"
+                    Title="{Binding Title}">
+    <windows:WindowBase.Resources>
+        <HierarchicalDataTemplate DataType="{x:Type models:MenuItemModel}"
+                                  ItemsSource="{Binding Children, UpdateSourceTrigger=PropertyChanged}">
+            <MenuItem Header="{Binding Text}" Command="{Binding Command}" IsEnabled="{Binding bIsEnabled}"
+                      Margin="0" Padding="0"/>
+        </HierarchicalDataTemplate>
+    </windows:WindowBase.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Menu -->
+            <RowDefinition Height="Auto" />
+            <!-- Player -->
+            <RowDefinition Height="*"/>
+            <!-- Status Bar -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Menu Name="Menu"
+              IsMainMenu="True"
+              VerticalAlignment="Top"
+              Width="Auto" Height="30"
+              Padding="0" Margin="0"
+              Grid.Row="0" Grid.Column="0">
+            <Menu.Background>
+                <SolidColorBrush Color="Black" Opacity="0.3" />
+            </Menu.Background>
+            <MenuItem Header="{x:Static properties:Resources.MENULABEL_HEADER_FILE}">
+                <MenuItem Header="_Open File..." Command="{Binding FileMenuOpenClickedCommand}"/>
+                <MenuItem Header="Recent Files" ItemsSource="{Binding RecentFiles}" />
+                <MenuItem Header="_Close" Command="{Binding OnOpenClicked}" IsEnabled="{Binding MediaPlayer.Engine.bIsFileLoaded}"/>
+                <Separator />
+                <MenuItem Header="Settings" Command="{Binding OnSettingsClicked}" />
+                <Separator />
+                <MenuItem Header="Exit" Command="{Binding FileMenuExitClickedCommand}" />
+            </MenuItem>
+            <MenuItem Header="Playback">
+                <MenuItem Header="Decrease Volume" IsEnabled="False" />
+                <MenuItem Header="Increase Volume" IsEnabled="False" />
+                <MenuItem Header="Mute Volume" IsEnabled="False" />
+                <Separator />
+                <MenuItem Header="Decrease Rate" IsEnabled="False" />
+                <MenuItem Header="Increase Rate" IsEnabled="False" />
+                <MenuItem Header="Reset Rate" IsEnabled="False" />
+                <Separator />
+                <MenuItem Header="Repeat">
+                    <MenuItem Header="File" IsEnabled="False" />
+                    <MenuItem Header="Playlist" IsEnabled="False" />
+                    <Separator />
+                    <MenuItem Header="Once" IsEnabled="False" />
+                    <MenuItem Header="Forever" IsEnabled="False" />
+                </MenuItem>
+                <MenuItem Header="Audio Track">
+
+                </MenuItem>
+                <MenuItem Header="Video Track">
+
+                </MenuItem>
+                <MenuItem Header="Subtitle Track">
+
+                </MenuItem>
+                <Separator />
+                <MenuItem Header="After Playback">
+                    <MenuItem Header="Nothing" IsEnabled="False" />
+                    <MenuItem Header="Play Next File" IsEnabled="False" />
+                    <MenuItem Header="Exit" IsEnabled="False" />
+                    <MenuItem Header="Lock" IsEnabled="False" />
+                    <MenuItem Header="Log Off" IsEnabled="False" />
+                    <MenuItem Header="Shutdown" IsEnabled="False" />
+                </MenuItem>
+            </MenuItem>
+            <MenuItem Header="Navigate">
+                <MenuItem Header="Next File" IsEnabled="False" />
+                <MenuItem Header="Previous File" IsEnabled="False" />
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="Website" IsEnabled="False" />
+                <MenuItem Header="Donate" IsEnabled="False" />
+                <MenuItem Header="Check For Updates" Command="{Binding HelpMenuCheckForUpdatesClickedCommand}"></MenuItem>
+                <Separator />
+                <MenuItem Header="About" Command="{Binding HelpMenuAboutClickedCommand}"></MenuItem>
+            </MenuItem>
+        </Menu>
+        <StackPanel Name="MediaPlayerContainer"
+                    Grid.Row="1" Grid.Column="0"
+                    dragDrop:DragDrop.IsDropTarget="True"
+                    dragDrop:DragDrop.DropHandler="{Binding}">
+            <!-- This is a bit of a hack to make the StackPanel expand to 100% width and height. -->
+            <StackPanel.Background>
+                <SolidColorBrush Opacity="0" Color="AntiqueWhite"/>
+            </StackPanel.Background>
+            <MediaElement Name="MediaPlayer"
+                          LoadedBehavior="Manual"
+                          Stretch="Uniform"
+                          StretchDirection="Both">
+            </MediaElement>
+        </StackPanel>
+        <StatusBar Name="StatusBar"
+                   Grid.Row="2" Grid.Column="0">
+            <StatusBar.Background>
+                <SolidColorBrush Color="Black" Opacity="0.3" />
+            </StatusBar.Background>
+            <StatusBar.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <!-- Seeker -->
+                            <RowDefinition Height="Auto" />
+                            <!-- Controls -->
+                            <RowDefinition Height="Auto"/>
+                            <!-- Status Text -->
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <!-- 5 columns to play with -->
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                </ItemsPanelTemplate>
+            </StatusBar.ItemsPanel>
+            <!-- Seek Bar -->
+            <StatusBarItem Name="SeekControlContainer"
+                           HorizontalContentAlignment="Stretch"
+                           Grid.Row="0" Grid.Column="0"
+                           Grid.ColumnSpan="5">
+                <controls:ExtendedSlider 
+                        x:Name="SeekControl"
+                        Style="{DynamicResource FlatSlider}"
+                        Minimum="{Binding MediaPlayer.Context.SeekBar.Minimum}"
+                        Maximum="{Binding MediaPlayer.Context.SeekBar.Maximum}"
+                        Value="{Binding MediaPlayer.Context.SeekBar.Value, Mode=OneWay}"
+                        Seek="{Binding MediaPlayer.Context.SeekBar.OnSeek}"
+                        DragStarted="{Binding MediaPlayer.Context.SeekBar.OnDragStarted}"
+                        DragCompleted="{Binding MediaPlayer.Context.SeekBar.OnDragCompleted}"
+                        IsEnabled="{Binding MediaPlayer.Context.SeekBar.bEnabled}"
+                        IsMoveToPointEnabled="True"
+                        Cursor="Hand">
+                </controls:ExtendedSlider>
+            </StatusBarItem>
+            <!-- Playback Controls -->
+            <StatusBarItem HorizontalContentAlignment="Center"
+                           Grid.Row="1" Grid.Column="1"
+                           Grid.ColumnSpan="3">
+                <!-- TODO: Playback controls -->
+                <TextBlock>~~~~~~~~~~~~~~ Playback Controls ~~~~~~~~~~~~~~</TextBlock>
+            </StatusBarItem>
+            <!-- Volume Control -->
+            <StatusBarItem Name="VolumeControlContainer" 
+                           HorizontalContentAlignment="Stretch"
+                           Grid.Row="1" Grid.Column="4"
+                           Cursor="Hand">
+                <!-- Note: the tick frequency is 1 so the user can click anywhere to set the volume.
+                           Tick frequency only applies to the mouse wheel, and that is handled in code. -->
+                <controls:ExtendedSlider x:Name="VolumeControl"
+                                         Minimum="0" Maximum="100"
+                                         MaxWidth="200"
+                                         Value="{Binding Store.Player.Volume, Mode=OneWay}"
+                                         DragDelta="{Binding MediaEngine.SetVolumeCommand}"
+                                         IsMoveToPointEnabled="True"
+                                         IsSnapToTickEnabled="True"
+                                         TickFrequency="1"
+                                         Cursor="Hand" />
+            </StatusBarItem>
+            <!-- Media Status -->
+            <StatusBarItem HorizontalContentAlignment="Left"
+                           Grid.Row="2" Grid.Column="0">
+                <TextBlock Text="{Binding MediaPlayer.Context.Status.StatusText}" />
+            </StatusBarItem>
+            <!-- Media Timestamp -->
+            <StatusBarItem HorizontalContentAlignment="Right"
+                           Grid.Row="2" Grid.Column="4">
+                <TextBlock Text="{Binding MediaPlayer.Context.Status.TimeText}" />
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</windows:MediaOutputWindowBase>
