@@ -1,17 +1,12 @@
-﻿using log4net.Core;
-
-namespace FoundaryMediaPlayer.Events
+﻿namespace FoundaryMediaPlayer.Events
 {
     /// <summary>
     /// Called when a request to clear the playlist has been made.
     /// </summary>
-    public sealed class ClearPlaylistRequestEvent : EventBase<ClearPlaylistRequestEvent>
+    public sealed class FClearPlaylistRequestEvent : ARequestEventBase<FClearPlaylistRequestEvent>
     {
         /// <inheritdoc />
-        protected override Level LoggingLevel { get; } = Level.Info;
-
-        /// <inheritdoc />
-        protected override string GetLoggerMessage(ClearPlaylistRequestEvent payload)
+        protected override string GetLoggerMessage(FClearPlaylistRequestEvent payload)
         {
             return "Request made to clear the playlist.";
         }

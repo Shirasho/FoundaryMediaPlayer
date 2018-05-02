@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Input;
-using FoundaryMediaPlayer.Configuration;
 using FoundaryMediaPlayer.Windows;
 
 namespace FoundaryMediaPlayer.Engine
 {
-    /// <summary>
-    /// 
-    /// </summary>
     public interface IMediaEngine : IDisposable
     {
         /// <summary>
+        /// The current playlist.
+        /// </summary>
+        IReadOnlyPlaylist Playlist { get; }
+
+        /// <summary>
         /// The media formats of the application.
         /// </summary>
-        MediaFormatCollection MediaFormats { get; }
+        IReadOnlyMediaFormatCollection MediaFormats { get; }
 
         /// <summary>
         /// Sets the output volume. Required by the view.
@@ -46,7 +47,7 @@ namespace FoundaryMediaPlayer.Engine
         /// Sets the owner window of this engine.
         /// </summary>
         /// <param name="owner"></param>
-        void SetOwner(MediaOutputWindowBase owner);
+        void SetOwner(ShellWindow owner);
 
         /// <summary>
         /// Sets the output volume.
@@ -78,20 +79,20 @@ namespace FoundaryMediaPlayer.Engine
         void CloseMedia();
 
         /// <summary>
-        /// Whether the subtitle renderer specified in the <see cref="Store"/> is registered.
+        /// Whether the subtitle renderer specified in the <see cref="FApplicationStore"/> is registered.
         /// </summary>
         /// <returns></returns>
         bool IsSubtitleRendererRegistered();
 
         /// <summary>
-        /// Obtains the subtitle renderer from the <see cref="Store"/>. If it is not supported,
+        /// Obtains the subtitle renderer from the <see cref="FApplicationStore"/>. If it is not supported,
         /// a different renderer will be returned.
         /// </summary>
         /// <returns></returns>
         ESubtitleRenderer GetSubtitleRenderer();
 
         /// <summary>
-        /// Gets the video renderer from the <see cref="Store"/>. If the specified renderer is not
+        /// Gets the video renderer from the <see cref="FApplicationStore"/>. If the specified renderer is not
         /// supported, another video renderer will be returned.
         /// </summary>
         /// <returns></returns>
@@ -105,7 +106,7 @@ namespace FoundaryMediaPlayer.Engine
         bool IsSubtitleRendererRegistered(ESubtitleRenderer renderer);
 
         /// <summary>
-        /// Returns whether the video renderer in the <see cref="Store"/> is registered.
+        /// Returns whether the video renderer in the <see cref="FApplicationStore"/> is registered.
         /// </summary>
         /// <returns></returns>
         bool IsVideoRendererRegistered();

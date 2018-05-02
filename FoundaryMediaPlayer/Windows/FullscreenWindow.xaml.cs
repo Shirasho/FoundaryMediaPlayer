@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Windows;
-using FluentAssertions;
-using FoundaryMediaPlayer.Configuration;
+using FoundaryMediaPlayer.Application;
 using FoundaryMediaPlayer.Events;
-using FoundaryMediaPlayer.Input;
 using Prism.Events;
 
 namespace FoundaryMediaPlayer.Windows
@@ -14,25 +12,24 @@ namespace FoundaryMediaPlayer.Windows
     public partial class FullscreenWindow
     {
         /// <inheritdoc />
-        public override UIElement MediaPlayerWrapper => null;
+        public override UIElement MediaPlayerWrapper { get; }
 
-        /// <inheritdoc />
-        public FullscreenWindow(IEventAggregator eventAggregator, Store store) 
+        public FullscreenWindow(IEventAggregator eventAggregator, FApplicationStore store) 
             : base(nameof(FullscreenWindow), eventAggregator, store)
         {
             InitializeComponent();
-            
-            EventAggregator.GetEvent<ToggleFullScreenKeyBindingEvent>().Subscribe(OnToggleFullScreen);
 
-            InputBindingManager.Monitor(this);
+            SubscribeEvent<FToggleFullScreenRequestEvent>(OnToggleFullScreen);
+
+            GInputBindingManager.Monitor(this);
         }
 
         /// <inheritdoc />
         protected override void OnClosed(EventArgs e)
         {
-            InputBindingManager.Unmonitor(this);
+            GInputBindingManager.Unmonitor(this);
 
-            EventAggregator.GetEvent<ToggleFullScreenKeyBindingEvent>().Unsubscribe(OnToggleFullScreen);
+            UnsubscribeEvent<FToggleFullScreenRequestEvent>(OnToggleFullScreen);
 
             base.OnClosed(e);
         }
@@ -41,11 +38,14 @@ namespace FoundaryMediaPlayer.Windows
         /// Called when the <see cref="EKeybindableEvent.ToggleFullscreen"/> event is called.
         /// </summary>
         /// <param name="e"></param>
-        protected void OnToggleFullScreen(ToggleFullScreenKeyBindingEvent e)
+        protected void OnToggleFullScreen(FToggleFullScreenRequestEvent e)
         {
             // This window should only be available when transitioning from bFullscreen to !bFullscreen.
-            // As such all events of this type should close the fullscreen window.
-            Close();
+            // As such all events of this type on this window should close the fullscreen window.
+            if (e.IsEventSender(this))
+            {
+                Close();
+            }
         }
     }
 }

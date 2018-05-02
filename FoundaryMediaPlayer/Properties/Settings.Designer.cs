@@ -31,14 +31,5 @@ namespace FoundaryMediaPlayer.Properties {
                 return ((bool)(this["bCheckForUpdates"]));
             }
         }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool bLoadExternalKernelModules {
-            get {
-                return ((bool)(this["bLoadExternalKernelModules"]));
-            }
-        }
     }
 }

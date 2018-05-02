@@ -7,13 +7,13 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when a window is loading its key bindings.
     /// </summary>
-    public sealed class KeyBindingsLoadingEvent : EventBase<KeyBindingsLoadingEvent>
+    public sealed class FKeyBindingsLoadingEvent : AEventBase<FKeyBindingsLoadingEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(KeyBindingsLoadingEvent payload)
+        protected override string GetLoggerMessage(FKeyBindingsLoadingEvent payload)
         {
             return "Loading key bindings from store.";
         }
@@ -22,26 +22,26 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when a window has finished loading its key bindings.
     /// </summary>
-    public sealed class KeyBindingsLoadedEvent : EventBase<IList<string>, KeyBindingsLoadedEvent>
+    public sealed class FKeyBindingsLoadedEvent : AEventBase<IList<string>, FKeyBindingsLoadedEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel => (Data?.Count ?? 0) == 0  ? Level.Info : Level.Warn;
 
         /// <inheritdoc />
-        public KeyBindingsLoadedEvent()
+        public FKeyBindingsLoadedEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public KeyBindingsLoadedEvent(IList<string> data) 
+        public FKeyBindingsLoadedEvent(IList<string> data) 
             : base(data)
         {
         }
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(KeyBindingsLoadedEvent payload)
+        protected override string GetLoggerMessage(FKeyBindingsLoadedEvent payload)
         {
             if (Data == null || Data.Count == 0)
             {

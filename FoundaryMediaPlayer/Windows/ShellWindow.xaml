@@ -1,4 +1,4 @@
-﻿<windows:MediaOutputWindowBase x:Class="FoundaryMediaPlayer.Windows.ShellWindow"
+﻿<windows:AMediaWindowBase x:Class="FoundaryMediaPlayer.Windows.ShellWindow"
                     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:prism="http://prismlibrary.com/"
@@ -12,13 +12,13 @@
                     mah:DialogParticipation.Register="{Binding}"
                     GlowBrush="{DynamicResource AccentColorBrush}"
                     Title="{Binding Title}">
-    <windows:WindowBase.Resources>
+    <windows:AMediaWindowBase.Resources>
         <HierarchicalDataTemplate DataType="{x:Type models:MenuItemModel}"
                                   ItemsSource="{Binding Children, UpdateSourceTrigger=PropertyChanged}">
             <MenuItem Header="{Binding Text}" Command="{Binding Command}" IsEnabled="{Binding bIsEnabled}"
                       Margin="0" Padding="0"/>
         </HierarchicalDataTemplate>
-    </windows:WindowBase.Resources>
+    </windows:AMediaWindowBase.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <!-- Menu -->
@@ -42,9 +42,9 @@
                 <MenuItem Header="Recent Files" ItemsSource="{Binding RecentFiles}" />
                 <MenuItem Header="_Close" Command="{Binding OnOpenClicked}" IsEnabled="{Binding MediaPlayer.Engine.bIsFileLoaded}"/>
                 <Separator />
-                <MenuItem Header="Settings" Command="{Binding OnSettingsClicked}" />
+                <MenuItem Header="{x:Static properties:Resources.MENULABEL_SUBITEM_SETTINGS}" Command="{Binding OnSettingsClicked}" />
                 <Separator />
-                <MenuItem Header="Exit" Command="{Binding FileMenuExitClickedCommand}" />
+                <MenuItem Header="{x:Static properties:Resources.MENULABEL_SUBITEM_EXIT}" Command="{Binding FileMenuExitClickedCommand}" />
             </MenuItem>
             <MenuItem Header="Playback">
                 <MenuItem Header="Decrease Volume" IsEnabled="False" />
@@ -189,4 +189,4 @@
             </StatusBarItem>
         </StatusBar>
     </Grid>
-</windows:MediaOutputWindowBase>
+</windows:AMediaWindowBase>

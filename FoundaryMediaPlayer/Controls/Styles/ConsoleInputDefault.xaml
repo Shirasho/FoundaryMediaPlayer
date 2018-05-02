@@ -1,0 +1,20 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:FoundaryMediaPlayer.Controls">
+    <Style x:Key="ConsoleInputDefault"
+           TargetType="{x:Type local:ConsoleInput}"
+           BasedOn="{x:Null}">
+        <Setter Property="BorderThickness"
+                Value="0" />
+        <Setter Property="Background"
+                Value="#FF1E1E1E" />
+        <Setter Property="Foreground"
+                Value="WhiteSmoke" />
+        <Setter Property="FontFamily"
+                Value="Lucida Console" />
+        <Setter Property="ItemsMargin"
+                Value="5" />
+        <Setter Property="ItemHeight"
+                Value="10" />
+    </Style>
+</ResourceDictionary>

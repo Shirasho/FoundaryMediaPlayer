@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using FoundaryMediaPlayer.Configuration;
+using FoundaryMediaPlayer.Application;
 
 namespace FoundaryMediaPlayer.Engine
 {
     /// <summary>
     /// A media format.
     /// </summary>
-    public class MediaFormat : IEquatable<MediaFormat>
+    public class FMediaFormat : IEquatable<FMediaFormat>
     {
         /// <summary>
         /// 
@@ -45,7 +45,7 @@ namespace FoundaryMediaPlayer.Engine
         /// <summary>
         /// 
         /// </summary>
-        public MediaFormat()
+        public FMediaFormat()
             : this(null, null, (IEnumerable<string>)null)
         {
 
@@ -60,7 +60,7 @@ namespace FoundaryMediaPlayer.Engine
         /// <param name="bAudioOnly"></param>
         /// <param name="engineType"></param>
         /// <param name="bAssociable"></param>
-        public MediaFormat(string label, string description, string extensions, bool bAudioOnly = false, EEngineType engineType = EEngineType.Custom, bool bAssociable = true)
+        public FMediaFormat(string label, string description, string extensions, bool bAudioOnly = false, EEngineType engineType = EEngineType.Custom, bool bAssociable = true)
             : this(label, description, extensions?.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries), bAudioOnly, engineType, bAssociable)
         {
 
@@ -75,7 +75,7 @@ namespace FoundaryMediaPlayer.Engine
         /// <param name="bAudioOnly"></param>
         /// <param name="engineType"></param>
         /// <param name="bAssociable"></param>
-        public MediaFormat(string label, string description, IEnumerable<string> extensions, bool bAudioOnly = false, EEngineType engineType = EEngineType.Custom, bool bAssociable = true)
+        public FMediaFormat(string label, string description, IEnumerable<string> extensions, bool bAudioOnly = false, EEngineType engineType = EEngineType.Custom, bool bAssociable = true)
         {
             Label = label;
             Description = description;
@@ -89,7 +89,7 @@ namespace FoundaryMediaPlayer.Engine
         /// 
         /// </summary>
         /// <param name="other"></param>
-        public MediaFormat(MediaFormat other)
+        public FMediaFormat(FMediaFormat other)
         {
             Label = other.Label;
             Description = other.Description;
@@ -100,7 +100,7 @@ namespace FoundaryMediaPlayer.Engine
         }
 
         /// <inheritdoc />
-        public bool Equals(MediaFormat other)
+        public bool Equals(FMediaFormat other)
         {
             if (other == null)
             {
@@ -137,9 +137,9 @@ namespace FoundaryMediaPlayer.Engine
         }
 
         /// <summary>
-        /// Returns the file extension filter for this <see cref="MediaFormat"/>.
+        /// Returns the file extension filter for this <see cref="FMediaFormat"/>.
         /// </summary>
-        /// <returns>The file extension filter for this <see cref="MediaFormat"/>.</returns>
+        /// <returns>The file extension filter for this <see cref="FMediaFormat"/>.</returns>
         /// <remarks>Useful for the open file dialog.</remarks>
         public string GetFilter()
         {
@@ -159,7 +159,7 @@ namespace FoundaryMediaPlayer.Engine
         /// 
         /// </summary>
         /// <param name="store"></param>
-        public void Update(Store store)
+        public void Update(FApplicationStore store)
         {
             // Read from the save for any adjustments to this format category when supported.
         }

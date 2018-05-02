@@ -2,31 +2,29 @@
 
 namespace FoundaryMediaPlayer.Events
 {
-    
-
     /// <summary>
     /// The event sent when a request to adjust the volume has been created.
     /// </summary>
-    public sealed class VolumeChangeRequestEvent : NumericEventBase<float, VolumeChangeRequestEvent>
+    public sealed class FVolumeChangeRequestEvent : ANumericEventBase<float, FVolumeChangeRequestEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public VolumeChangeRequestEvent()
+        public FVolumeChangeRequestEvent()
             : this(0)
         {
 
         }
 
         /// <inheritdoc />
-        public VolumeChangeRequestEvent(float data) 
+        public FVolumeChangeRequestEvent(float data) 
             : base(data)
         {
         }
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(VolumeChangeRequestEvent payload)
+        protected override string GetLoggerMessage(FVolumeChangeRequestEvent payload)
         {
             return "Request made to " +
                    $"{(payload.ValueType == EValueType.Absolute ? "set" : "adjust")} " +

@@ -79,6 +79,15 @@ namespace FoundaryMediaPlayer.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Image Files.
+        /// </summary>
+        public static string LABEL_IMAGEFILES {
+            get {
+                return ResourceManager.GetString("LABEL_IMAGEFILES", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Media Files.
         /// </summary>
         public static string LABEL_MEDIAFILES {
@@ -88,11 +97,11 @@ namespace FoundaryMediaPlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exit.
+        ///   Looks up a localized string similar to Video Files.
         /// </summary>
-        public static string MENULABEL_EXIT {
+        public static string LABEL_VIDEOFILES {
             get {
-                return ResourceManager.GetString("MENULABEL_EXIT", resourceCulture);
+                return ResourceManager.GetString("LABEL_VIDEOFILES", resourceCulture);
             }
         }
         
@@ -106,29 +115,29 @@ namespace FoundaryMediaPlayer.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Media Properties.
+        ///   Looks up a localized string similar to Exit.
         /// </summary>
-        public static string MENULABEL_MEDIASETTINGS {
+        public static string MENULABEL_SUBITEM_EXIT {
             get {
-                return ResourceManager.GetString("MENULABEL_MEDIASETTINGS", resourceCulture);
+                return ResourceManager.GetString("MENULABEL_SUBITEM_EXIT", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Open File.
         /// </summary>
-        public static string MENULABEL_OPENFILE {
+        public static string MENULABEL_SUBITEM_OPENFILE {
             get {
-                return ResourceManager.GetString("MENULABEL_OPENFILE", resourceCulture);
+                return ResourceManager.GetString("MENULABEL_SUBITEM_OPENFILE", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Settings.
         /// </summary>
-        public static string MENULABEL_SETTINGS {
+        public static string MENULABEL_SUBITEM_SETTINGS {
             get {
-                return ResourceManager.GetString("MENULABEL_SETTINGS", resourceCulture);
+                return ResourceManager.GetString("MENULABEL_SUBITEM_SETTINGS", resourceCulture);
             }
         }
     }

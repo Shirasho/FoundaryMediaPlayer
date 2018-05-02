@@ -40,21 +40,21 @@
     /// <summary>
     /// The event base for events based around broadcasting a number.
     /// </summary>
-    public abstract class NumericEventBase<TType, TImpl> : EventBase<TType, TImpl>
-        where TImpl : NumericEventBase<TType, TImpl>, new()
+    public abstract class ANumericEventBase<TType, TImpl> : AEventBase<TType, TImpl>
+        where TImpl : ANumericEventBase<TType, TImpl>, new()
     {
         /// <summary>
-        /// How to treat <see cref="EventBase{TType,TImpl}.Data"/>.
+        /// How to treat <see cref="AEventBase{TType, TImpl}.Data"/>.
         /// </summary>
         public EValueType ValueType { get; set; } = EValueType.Absolute;
 
         /// <summary>
-        /// The number type of <see cref="EventBase{TType,TImpl}.Data"/>.
+        /// The number type of <see cref="AEventBase{TType, TImpl}.Data"/>.
         /// </summary>
         public EPercentNumberType NumberType { get; set; } = EPercentNumberType.NaN;
 
         /// <inheritdoc />
-        protected NumericEventBase(TType data)
+        protected ANumericEventBase(TType data)
             : base(data)
         {
 

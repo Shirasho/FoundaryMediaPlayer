@@ -1,15 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FoundaryMediaPlayer.Engine
+﻿namespace FoundaryMediaPlayer.Engine
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public sealed class MediaType
+    public sealed class FMediaType
     {
     }
 }

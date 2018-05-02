@@ -7,26 +7,26 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when a window regains focus.
     /// </summary>
-    public sealed class WindowFocusEvent : EventBase<MetroWindow, WindowFocusEvent>
+    public sealed class FWindowFocusEvent : AEventBase<MetroWindow, FWindowFocusEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public WindowFocusEvent()
+        public FWindowFocusEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public WindowFocusEvent(MetroWindow data) : base(data)
+        public FWindowFocusEvent(MetroWindow data) : base(data)
         {
         }
 
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(WindowFocusEvent payload)
+        protected override string GetLoggerMessage(FWindowFocusEvent payload)
         {
             return $"Window {(payload.Data?.Name ?? payload.Data?.GetType().GetTypeInfo().Name ?? "[Unknown]")} lost focus.";
         }

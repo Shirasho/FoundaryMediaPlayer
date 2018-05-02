@@ -8,27 +8,27 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when a window is closing.
     /// </summary>
-    public sealed class WindowClosingEvent : EventBase<MetroWindow, WindowClosingEvent>
+    public sealed class FWindowClosingEvent : AEventBase<MetroWindow, FWindowClosingEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public WindowClosingEvent()
+        public FWindowClosingEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public WindowClosingEvent(MetroWindow data) 
+        public FWindowClosingEvent(MetroWindow data) 
             : base(data)
         {
             
         }
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(WindowClosingEvent payload)
+        protected override string GetLoggerMessage(FWindowClosingEvent payload)
         {
             return $"Closing window {(payload.Data?.Name ?? payload.Data?.GetType().GetTypeInfo().Name ?? "[Unknown]")}.";
         }
@@ -37,27 +37,27 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when a window has closed.
     /// </summary>
-    public sealed class WindowClosedEvent : EventBase<MetroWindow, WindowClosedEvent>
+    public sealed class FWindowClosedEvent : AEventBase<MetroWindow, FWindowClosedEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public WindowClosedEvent()
+        public FWindowClosedEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public WindowClosedEvent(MetroWindow data) 
+        public FWindowClosedEvent(MetroWindow data) 
             : base(data)
         {
 
         }
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(WindowClosedEvent payload)
+        protected override string GetLoggerMessage(FWindowClosedEvent payload)
         {
             return $"Window {(payload.Data?.Name ?? payload.Data?.GetType().GetTypeInfo().Name ?? "[Unknown]")} closed.";
         }

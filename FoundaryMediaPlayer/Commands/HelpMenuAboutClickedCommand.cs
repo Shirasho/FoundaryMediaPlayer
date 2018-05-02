@@ -1,7 +1,8 @@
 ﻿using System;
 using FluentAssertions;
-using FoundaryMediaPlayer.Contexts;
-using FoundaryMediaPlayer.Windows;
+using FoundaryMediaPlayer.Application;
+using FoundaryMediaPlayer.Windows.Contexts;
+using FoundaryMediaPlayer.Windows.Data;
 using MahApps.Metro.Controls.Dialogs;
 using Prism.Commands;
 
@@ -10,7 +11,7 @@ namespace FoundaryMediaPlayer.Commands
     /// <summary>
     /// The command that executes when Help > About is clicked.
     /// </summary>
-    public class HelpMenuAboutClickedCommand : DelegateCommand
+    public class FHelpMenuAboutClickedCommand : DelegateCommand
     {
         private static string AboutMessage { get; } =
             $"Copyright Foundary Interactive 2018{Environment.NewLine}" +
@@ -28,8 +29,8 @@ namespace FoundaryMediaPlayer.Commands
         /// <param name="windowService"></param>
         /// <param name="applicationSettings"></param>
         /// <param name="canExecuteMethod"></param>
-        public HelpMenuAboutClickedCommand(
-            WindowContext context, 
+        public FHelpMenuAboutClickedCommand(
+            AWindowContext context, 
             IWindowService windowService, 
             IApplicationSettings applicationSettings, 
             Func<bool> canExecuteMethod = null)
@@ -41,12 +42,12 @@ namespace FoundaryMediaPlayer.Commands
         /// <summary>
         /// Executes the command.
         /// </summary>
-        protected static void AboutClicked(WindowContext context, IWindowService windowService, IApplicationSettings settings)
+        protected static void AboutClicked(AWindowContext context, IWindowService windowService, IApplicationSettings settings)
         {
             windowService.Should().NotBeNull();
             settings.Should().NotBeNull();
 
-            var message = new ModalMessage
+            var message = new FModalMessage
             {
                 Context = context,
                 DialogStyle = MessageDialogStyle.Affirmative,

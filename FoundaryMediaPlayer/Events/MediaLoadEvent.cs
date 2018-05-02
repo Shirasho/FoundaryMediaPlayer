@@ -7,52 +7,52 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when the media engine starts loading a playlist item for playback.
     /// </summary>
-    public sealed class MediaLoadingEvent : EventBase<PlaylistItem, MediaLoadingEvent>
+    public sealed class FMediaLoadingEvent : AEventBase<FPlaylistItem, FMediaLoadingEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public MediaLoadingEvent()
+        public FMediaLoadingEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public MediaLoadingEvent(PlaylistItem value)
+        public FMediaLoadingEvent(FPlaylistItem value)
             : base(value) {}
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(MediaLoadingEvent payload)
+        protected override string GetLoggerMessage(FMediaLoadingEvent payload)
         {
             payload.Data.Should().NotBeNull();
-            return $"Loading media {payload.Data.Type} at {payload.Data.File.Name}.";
+            return $"Loading media {payload.Data.Type.ToString().ToLowerInvariant()} at {payload.Data.File.FullName}.";
         }
     }
 
     /// <summary>
     /// The event sent when the media engine has completed loading a playlist item for playback.
     /// </summary>
-    public sealed class MediaLoadedEvent : EventBase<PlaylistItem, MediaLoadedEvent>
+    public sealed class FMediaLoadedEvent : AEventBase<FPlaylistItem, FMediaLoadedEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public MediaLoadedEvent()
+        public FMediaLoadedEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public MediaLoadedEvent(PlaylistItem value)
+        public FMediaLoadedEvent(FPlaylistItem value)
             : base(value) {}
 
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(MediaLoadedEvent payload)
+        protected override string GetLoggerMessage(FMediaLoadedEvent payload)
         {
             payload.Data.Should().NotBeNull();
             return $"Media {payload.Data.Type} at {payload.Data.File.Name} loaded.";

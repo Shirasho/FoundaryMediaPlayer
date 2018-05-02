@@ -7,26 +7,26 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event sent when a window is blurred.
     /// </summary>
-    public sealed class WindowBlurEvent : EventBase<MetroWindow, WindowBlurEvent>
+    public sealed class FWindowBlurEvent : AEventBase<MetroWindow, FWindowBlurEvent>
     {
         /// <inheritdoc />
         protected override Level LoggingLevel { get; } = Level.Info;
 
         /// <inheritdoc />
-        public WindowBlurEvent()
+        public FWindowBlurEvent()
             : this(null)
         {
 
         }
 
         /// <inheritdoc />
-        public WindowBlurEvent(MetroWindow data) : base(data)
+        public FWindowBlurEvent(MetroWindow data) : base(data)
         {
         }
 
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(WindowBlurEvent payload)
+        protected override string GetLoggerMessage(FWindowBlurEvent payload)
         {
             return $"Window {(payload.Data?.Name ?? payload.Data?.GetType().GetTypeInfo().Name ?? "[Unknown]")} lost focus.";
         }

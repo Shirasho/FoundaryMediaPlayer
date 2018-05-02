@@ -26,7 +26,7 @@ namespace FoundaryMediaPlayer.Engine
     /// <summary>
     /// A playlist item.
     /// </summary>
-    public class PlaylistItem
+    public class FPlaylistItem
     {
         /// <summary>
         /// The type.
@@ -47,13 +47,13 @@ namespace FoundaryMediaPlayer.Engine
         /// <summary>
         /// The application media formats.
         /// </summary>
-        protected IReadOnlyCollection<MediaFormat> MediaFormats { get; }
+        protected IReadOnlyMediaFormatCollection MediaFormats { get; }
 
         /// <summary>
         /// </summary>
         /// <exception cref="ArgumentException"><paramref name="path"/> is of an unsupported file type.</exception>
         [SuppressMessage("ReSharper", "LocalizableElement")]
-        public PlaylistItem(IReadOnlyCollection<MediaFormat> mediaFormats, string path, EPlaylistItemType type)
+        public FPlaylistItem(IReadOnlyMediaFormatCollection mediaFormats, string path, EPlaylistItemType type)
             : this(mediaFormats, new FileInfo(path), type)
         {
 
@@ -63,13 +63,13 @@ namespace FoundaryMediaPlayer.Engine
         /// </summary>
         /// <exception cref="ArgumentException"><paramref name="file"/> is of an unsupported file type.</exception>
         [SuppressMessage("ReSharper", "LocalizableElement")]
-        public PlaylistItem(IReadOnlyCollection<MediaFormat> mediaFormats, FileInfo file, EPlaylistItemType type)
+        public FPlaylistItem(IReadOnlyMediaFormatCollection mediaFormats, FileInfo file, EPlaylistItemType type)
         {
             mediaFormats.Should().NotBeNullOrEmpty();
             file.Should().NotBeNull();
             file.Exists.Should().BeTrue();
 
-            if (!MediaFormats.Any(f => f.HasExtension(File.Extension.TrimStart('.'))))
+            if (!mediaFormats.Any(f => f.HasExtension(file.Extension.TrimStart('.'))))
             {
                 throw new ArgumentException($"Unsupported file type {file.Extension}", nameof(file));
             }

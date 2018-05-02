@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Windows.Input;
-using FoundaryMediaPlayer.Input;
+using FoundaryMediaPlayer.Application;
 
 namespace FoundaryMediaPlayer.Events
 {
-    internal class KeyBindingEventArgs : EventArgs
+    public class KeyBindingEventArgs : EventArgs
     {
-        public MergedInputGesture KeyBinding { get; }
+        public FMergedInputGesture KeyBinding { get; }
 
         /// <summary>
         /// 
@@ -15,7 +15,7 @@ namespace FoundaryMediaPlayer.Events
         /// <param name="modifiers"></param>
         public KeyBindingEventArgs(Key key, ModifierKeys modifiers)
         {
-            KeyBinding = new MergedInputGesture(key, modifiers);
+            KeyBinding = new FMergedInputGesture(key, modifiers);
         }
     }
 }

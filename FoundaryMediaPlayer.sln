@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27428.2037
+VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundaryMediaPlayer", "FoundaryMediaPlayer\FoundaryMediaPlayer.csproj", "{0459FC33-AFC4-4807-8686-2B79E9108C8C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FoundaryMediaPlayer", "FoundaryMediaPlayer\FoundaryMediaPlayer.csproj", "{2D7641DC-3352-45C1-B826-0FD7470DC132}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,19 +13,19 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Debug|x64.ActiveCfg = Debug|x64
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Debug|x64.Build.0 = Debug|x64
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Debug|x86.ActiveCfg = Debug|x86
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Debug|x86.Build.0 = Debug|x86
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Release|x64.ActiveCfg = Release|x64
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Release|x64.Build.0 = Release|x64
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Release|x86.ActiveCfg = Release|x86
-		{0459FC33-AFC4-4807-8686-2B79E9108C8C}.Release|x86.Build.0 = Release|x86
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Debug|x64.ActiveCfg = Debug|x64
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Debug|x64.Build.0 = Debug|x64
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Debug|x86.ActiveCfg = Debug|x86
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Debug|x86.Build.0 = Debug|x86
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Release|x64.ActiveCfg = Release|x64
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Release|x64.Build.0 = Release|x64
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Release|x86.ActiveCfg = Release|x86
+		{2D7641DC-3352-45C1-B826-0FD7470DC132}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {E501F663-7593-49F8-8CCF-E3A61613C2D1}
+		SolutionGuid = {61592F05-181E-44AE-9101-556E0FF35CAE}
 	EndGlobalSection
 EndGlobal

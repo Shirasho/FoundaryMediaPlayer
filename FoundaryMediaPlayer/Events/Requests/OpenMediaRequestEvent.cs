@@ -1,18 +1,14 @@
 ﻿using FoundaryMediaPlayer.Engine;
-using log4net.Core;
 
 namespace FoundaryMediaPlayer.Events
 {
     /// <summary>
     /// The event sent when a request to open the current playlist media item has been created.
     /// </summary>
-    public sealed class OpenMediaRequestEvent : EventBase<bool, OpenMediaRequestEvent>
+    public sealed class FOpenMediaRequestEvent : ARequestEventBase<bool, FOpenMediaRequestEvent>
     {
         /// <inheritdoc />
-        protected override Level LoggingLevel { get; } = Level.Info;
-
-        /// <inheritdoc />
-        public OpenMediaRequestEvent()
+        public FOpenMediaRequestEvent()
             : this(true)
         {
 
@@ -25,14 +21,14 @@ namespace FoundaryMediaPlayer.Events
         /// we only want to start playing the media if no other media is playing.
         /// </summary>
         /// <param name="bDisruptPlayingMedia"></param>
-        public OpenMediaRequestEvent(bool bDisruptPlayingMedia)
+        public FOpenMediaRequestEvent(bool bDisruptPlayingMedia)
             : base(bDisruptPlayingMedia)
         {
             
         }
 
         /// <inheritdoc />
-        protected override string GetLoggerMessage(OpenMediaRequestEvent payload)
+        protected override string GetLoggerMessage(FOpenMediaRequestEvent payload)
         {
             return "Request made to open media.";
         }

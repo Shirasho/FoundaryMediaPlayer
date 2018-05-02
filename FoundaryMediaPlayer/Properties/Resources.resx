@@ -123,22 +123,29 @@
   <data name="LABEL_AUDIOFILES" xml:space="preserve">
     <value>Audio Files</value>
   </data>
+  <data name="LABEL_IMAGEFILES" xml:space="preserve">
+    <value>Image Files</value>
+  </data>
   <data name="LABEL_MEDIAFILES" xml:space="preserve">
     <value>Media Files</value>
   </data>
-  <data name="MENULABEL_EXIT" xml:space="preserve">
-    <value>Exit</value>
+  <data name="LABEL_VIDEOFILES" xml:space="preserve">
+    <value>Video Files</value>
   </data>
   <data name="MENULABEL_HEADER_FILE" xml:space="preserve">
     <value>File</value>
+    <comment>The "File" menu header label.</comment>
   </data>
-  <data name="MENULABEL_MEDIASETTINGS" xml:space="preserve">
-    <value>Media Properties</value>
+  <data name="MENULABEL_SUBITEM_EXIT" xml:space="preserve">
+    <value>Exit</value>
+    <comment>The "Exit" menu subitem label.</comment>
   </data>
-  <data name="MENULABEL_OPENFILE" xml:space="preserve">
+  <data name="MENULABEL_SUBITEM_OPENFILE" xml:space="preserve">
     <value>Open File</value>
+    <comment>The "Open File" menu subitem label.</comment>
   </data>
-  <data name="MENULABEL_SETTINGS" xml:space="preserve">
+  <data name="MENULABEL_SUBITEM_SETTINGS" xml:space="preserve">
     <value>Settings</value>
+    <comment>The "Settings" menu subitem label.</comment>
   </data>
 </root>

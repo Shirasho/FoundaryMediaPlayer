@@ -12,8 +12,8 @@ namespace FoundaryMediaPlayer.Events
     /// The event base.
     /// </summary>
     /// <typeparam name="TImpl"></typeparam>
-    public abstract class EventBase<TImpl> : PubSubEvent<TImpl>
-        where TImpl : EventBase<TImpl>, new()
+    public abstract class AEventBase<TImpl> : PubSubEvent<TImpl>
+        where TImpl : AEventBase<TImpl>, new()
     {
         /// <summary>
         /// The <see cref="TypeInfo"/> of <typeparamref name="TImpl"/>.
@@ -31,7 +31,7 @@ namespace FoundaryMediaPlayer.Events
         /// The event logger for this event type.
         /// </summary>
         [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
-        private static ILog Logger { get; } = LogManager.GetLogger(typeof(EventBase<TImpl>));
+        private static ILog Logger { get; } = LogManager.GetLogger(typeof(AEventBase<TImpl>));
 
         /// <summary>
         /// The <see cref="TypeInfo"/> of the event aggregator to use as a stack boundary in log4net.
@@ -69,7 +69,7 @@ namespace FoundaryMediaPlayer.Events
         protected string DefaultLoggerMessage { get; } = $"Event called for event type {TImplType.Name}.";
 
         /// <summary>
-        /// Publishes the <see cref="EventBase{TImpl}"/>. The payload may not be null.
+        /// Publishes the <see cref="AEventBase{TImpl}"/>. The payload may not be null.
         /// </summary>
         /// <param name="payload">The payload to pass to the subscribers.</param>
         public override void Publish(TImpl payload)
@@ -107,8 +107,8 @@ namespace FoundaryMediaPlayer.Events
     /// <summary>
     /// The event base with a payload.
     /// </summary>
-    public abstract class EventBase<TType, TImpl> : EventBase<TImpl>
-        where TImpl : EventBase<TType, TImpl>, new()
+    public abstract class AEventBase<TType, TImpl> : AEventBase<TImpl>
+        where TImpl : AEventBase<TType, TImpl>, new()
     {
         /// <summary>
         /// The payload.
@@ -116,6 +116,6 @@ namespace FoundaryMediaPlayer.Events
         public TType Data { get; }
 
         /// <inheritdoc />
-        protected EventBase(TType data) { Data = data; }
+        protected AEventBase(TType data) { Data = data; }
     }
 }

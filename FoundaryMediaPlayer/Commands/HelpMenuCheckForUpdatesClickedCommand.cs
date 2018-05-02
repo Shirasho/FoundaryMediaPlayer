@@ -1,8 +1,9 @@
 ﻿using System;
 using FluentAssertions;
 using Foundary;
-using FoundaryMediaPlayer.Contexts;
-using FoundaryMediaPlayer.Windows;
+using FoundaryMediaPlayer.Application;
+using FoundaryMediaPlayer.Windows.Contexts;
+using FoundaryMediaPlayer.Windows.Data;
 using Prism.Commands;
 
 namespace FoundaryMediaPlayer.Commands
@@ -10,7 +11,7 @@ namespace FoundaryMediaPlayer.Commands
     /// <summary>
     /// The command that executes when Help > Check For Updates is clicked.
     /// </summary>
-    public sealed class HelpMenuCheckForUpdatesClickedCommand : DelegateCommand
+    public sealed class FHelpMenuCheckForUpdatesClickedCommand : DelegateCommand
     {
         /// <summary>
         /// 
@@ -20,9 +21,9 @@ namespace FoundaryMediaPlayer.Commands
         /// <param name="windowService"></param>
         /// <param name="applicationSettings"></param>
         /// <param name="canExecuteMethod"></param>
-        public HelpMenuCheckForUpdatesClickedCommand(
-            ApplicationUpdater applicationUpdater,
-            WindowContext context,
+        public FHelpMenuCheckForUpdatesClickedCommand(
+            FApplicationUpdater applicationUpdater,
+            AWindowContext context,
             IWindowService windowService,
             IApplicationSettings applicationSettings,
             Func<bool> canExecuteMethod = null)
@@ -31,21 +32,21 @@ namespace FoundaryMediaPlayer.Commands
 
         }
 
-        private static void CheckForUpdatesClicked(ApplicationUpdater updater, WindowContext context, IWindowService windowService, IApplicationSettings applicationSettings)
+        private static void CheckForUpdatesClicked(FApplicationUpdater updater, AWindowContext context, IWindowService windowService, IApplicationSettings applicationSettings)
         {
             updater.Should().NotBeNull();
 
             updater.CheckForUpdates().ContinueWith(t => OnCheckForUpdatesComplete(updater, context, windowService, applicationSettings));
         }
 
-        private static void OnCheckForUpdatesComplete(ApplicationUpdater updater, WindowContext context, IWindowService windowService, IApplicationSettings applicationSettings)
+        private static void OnCheckForUpdatesComplete(FApplicationUpdater updater, AWindowContext context, IWindowService windowService, IApplicationSettings applicationSettings)
         {
             windowService.Should().NotBeNull();
             applicationSettings.Should().NotBeNull();
 
             if (updater.UpdateStatus == EUpdateStatus.Outdated)
             {
-                var message = new ModalMessage
+                var message = new FModalMessage
                 {
                     Context = context,
                     Title = "Update Available",
@@ -61,7 +62,7 @@ namespace FoundaryMediaPlayer.Commands
             }
             else if (updater.UpdateStatus == EUpdateStatus.Error)
             {
-                var message = new ModalMessage
+                var message = new FModalMessage
                 {
                     Context = context,
                     Title = "Update Error",
@@ -72,7 +73,7 @@ namespace FoundaryMediaPlayer.Commands
             }
             else if (updater.UpdateStatus == EUpdateStatus.Current)
             {
-                var message = new ModalMessage
+                var message = new FModalMessage
                 {
                     Context = context,
                     Title = "No Updates Available",
