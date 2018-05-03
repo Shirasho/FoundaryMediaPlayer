@@ -31,6 +31,9 @@ namespace FoundaryMediaPlayer.Interop.Windows
         public static Guid EnhancedVideoRenderer { get; } = new Guid(CLSID_EnhancedVideoRenderer);
         public static Guid EnhancedVideoRendererCustom { get; } = EnhancedVideoRenderer;
 
+        public const string CLSID_NetShowSource = "6B6D0800-9ADA-11d0-A520-00A0D10129C0";
+        public static Guid NetShowSource { get; } = new Guid(CLSID_NetShowSource);
+
         public const string CLSID_Haali = "55DA30FC-F16B-49FC-BAA5-AE59FC65F82D";
         public static Guid Haali { get; } = new Guid(CLSID_Haali);
 
@@ -45,6 +48,9 @@ namespace FoundaryMediaPlayer.Interop.Windows
 
         public const string CLSID_LAVAudio = "E8E73B6B-4CB3-44A4-BE99-4F7BCB96E491";
         public static Guid LAVAudio { get; } = new Guid(CLSID_LAVAudio);
+
+        public const string CLSID_FFDShowVideoDecoder = "04FE9017-F873-410E-871E-AB91661A4EF7";
+        public static Guid FFDShowVideoDecoder { get; } = new Guid(CLSID_FFDShowVideoDecoder);
 
         public const string CLSID_MadVR = "E1A8B82A-32CE-4B0D-BE0D-AA68C772E423";
         public static Guid MadVR { get; } = new Guid(CLSID_MadVR);
@@ -67,9 +73,19 @@ namespace FoundaryMediaPlayer.Interop.Windows
         public const string CLSID_XYSubFilter = "2DFCB782-EC20-4A7C-B530-4577ADB33F21";
         public static Guid XYSubFilter { get; } = new Guid(CLSID_XYSubFilter);
 
+        public const string CLSID_AudioRecord = "E30629D2-27E5-11CE-875D-00608CB78066";
+        public static Guid AudioRecord { get; } = new Guid(CLSID_AudioRecord);
+
+        public const string IID_AsyncReader = "E436EBB5-524F-11CE-9F53-0020AF0BA770";
+        public static Guid AsyncReader { get; } = new Guid(IID_AsyncReader);
+
         
-        public const string IID_TIME_FORMAT_MEDIA_TIME = "7B785574-8C82-11CF-BC0C-00AA00AC74F6";
-        public static Guid TIME_FORMAT_MEDIA_TIME { get; } = new Guid(IID_TIME_FORMAT_MEDIA_TIME);
+        public const string IID_TIMEFORMAT_MediaTime = "7B785574-8C82-11CF-BC0C-00AA00AC74F6";
+        public static Guid TIMEFORMAT_MediaTime { get; } = new Guid(IID_TIMEFORMAT_MediaTime);
+
+
+        public const string IID_MEDIATYPE_Stream = "E436EB83-524F-11CE-9F53-0020AF0BA770";
+        public static Guid MEDIATYPE_Stream { get; } = new Guid(IID_MEDIATYPE_Stream);
 
         private const string CLSID_VMR9 = "51B4ABF3-748F-4E3B-A276-C828330E926A";
     }

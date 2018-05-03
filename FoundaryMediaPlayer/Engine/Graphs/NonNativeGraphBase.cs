@@ -207,7 +207,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         /// <inheritdoc />
         public int IsFormatSupported(Guid pFormat)
         {
-            return pFormat == IID.TIME_FORMAT_MEDIA_TIME ? (int)HResult.S_OK : (int)HResult.S_FALSE;
+            return pFormat == IID.TIMEFORMAT_MediaTime ? (int)HResult.S_OK : (int)HResult.S_FALSE;
         }
 
         /// <inheritdoc />
@@ -219,7 +219,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         /// <inheritdoc />
         public int GetTimeFormat(out Guid pFormat)
         {
-            pFormat = IID.TIME_FORMAT_MEDIA_TIME;
+            pFormat = IID.TIMEFORMAT_MediaTime;
             return (int)HResult.S_OK;
         }
 

@@ -14,30 +14,39 @@ using FoundaryMediaPlayer.Interfaces;
 using FoundaryMediaPlayer.Interop.Windows;
 using log4net;
 using Microsoft.Win32;
-using PInvoke;
+
+using HResult = PInvoke.HResult.Code;
 
 namespace FoundaryMediaPlayer.Engine.Graphs
 {
     /// <summary>
     /// The native graph for the operating system. For Windows this is DirectShow.
     /// </summary>
+    /// <remarks>
+    /// The native graph cannot inherit from <see cref="ANonNativeGraphBase"/> since
+    /// the concrete implementation is defined in COM. This class is simply a wrapper
+    /// for that native class, and we forward most requests to the native implementation.
+    /// </remarks>
     [Guid("09056CF8-B199-4E2E-9FE7-8EFCCA65E3EB")]
     [ClassInterface(ClassInterfaceType.None)]
-    public sealed class NativeGraph : IGraphBuilder2, IGraphBuilderDeadEnd
+    [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
+    public sealed class NativeGraph : IGraphBuilder2, IGraphBuilderDeadEnd, IDisposable
     {
         private static ILog _Logger { get; } = LogManager.GetLogger(typeof(NativeGraph));
 
-        private IFilterGraph2 _FilterGraph {get;}
-        private IFilterMapper2 _FilterMapper {get;}
+        private IFilterGraph2 _FilterGraph { get; }
+        private IFilterMapper2 _FilterMapper { get; }
 
         private List<AFilterBase> _SourceFilters { get; } = new List<AFilterBase>();
         private List<AFilterBase> _TransformFilters { get; } = new List<AFilterBase>();
         private List<AFilterBase> _OverrideFilters { get; } = new List<AFilterBase>();
 
-        private List<StreamDeadEnd> StreamDeadEnds { get; } = new List<StreamDeadEnd>();
+        private FStreamPathCollection _StreamPaths { get; set; }
+        private List<FStreamDeadEndCollection> _StreamDeadEnds { get; } = new List<FStreamDeadEndCollection>();
 
         private FIUnknownCollection _Unknowns { get; } = new FIUnknownCollection();
         private string _GraphId { get; } = string.Format(CultureInfo.InvariantCulture, "{0:B}", Marshal.GenerateGuidForType(typeof(NativeGraph)));
+        private ulong _Register { get; set; }
 
         public NativeGraph()
         {
@@ -48,11 +57,37 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             _FilterMapper.Should().NotBeNull();
         }
 
+        ~NativeGraph()
+        {
+            ReleaseUnmanagedResources();
+        }
+
+        /// <inheritdoc />
+        public void Dispose()
+        {
+            ReleaseUnmanagedResources();
+            GC.SuppressFinalize(this);
+        }
+
+        private void ReleaseUnmanagedResources()
+        {
+            lock (this)
+            {
+                _SourceFilters.Clear();
+                _TransformFilters.Clear();
+                _OverrideFilters.Clear();
+                _Unknowns.Clear();
+                WindowsInterop.CoRelease(_FilterGraph);
+            }
+        }
+
+        #region Interfaces
+
         public int AddFilter(IBaseFilter pFilter, string pName)
         {
             lock (this)
             {
-                int result;
+                ComResult result;
                 if (ComResult.FAILED(result = _FilterGraph.AddFilter(pFilter, pName)))
                 {
                     return result;
@@ -65,118 +100,81 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
         public int RemoveFilter(IBaseFilter pFilter)
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.RemoveFilter(pFilter);
+                return _FilterGraph.RemoveFilter(pFilter);
             }
         }
 
-
         public int EnumFilters(out IEnumFilters ppEnum)
         {
-            if (_FilterGraph2 == null)
+            //TODO: Evaluate lock
+            lock (this)
             {
-                ppEnum = null;
-                return HResult.E_UNEXPECTED.AsInt();
+                return _FilterGraph.EnumFilters(out ppEnum);
             }
-            return _FilterGraph2.EnumFilters(out ppEnum);
         }
 
 
         public int FindFilterByName(string pName, out IBaseFilter ppFilter)
         {
-            if (_FilterGraph2 == null)
-            {
-                ppFilter = null;
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.FindFilterByName(pName, out ppFilter);
+                return _FilterGraph.FindFilterByName(pName, out ppFilter);
             }
         }
 
 
         public int ConnectDirect(IPin ppinOut, IPin ppinIn, AMMediaType pmt)
         {
-            if (_FilterGraph2 == null)
-            {
-                return unchecked((int)HResult.E_UNEXPECTED);
-            }
-
             lock (this)
             {
                 var baseFilter = GetFilterFromPin(ppinIn);
-                var clsid = CLSID.GetCLSID(baseFilter);
+                var clsid = WindowsInterop.GetCLSID(baseFilter);
 
                 var baseFilterUpstream = GetFilterFromPin(ppinOut);
                 do
                 {
                     if (baseFilterUpstream == baseFilter)
                     {
-                        return unchecked((int)HResult.E_FAIL);
+                        return new ComResult(HResult.E_FAIL);
                     }
 
-                    if (clsid != CLSID.Proxy && CLSID.GetCLSID(baseFilterUpstream) == clsid)
+                    if (clsid != IID.Proxy && WindowsInterop.GetCLSID(baseFilterUpstream) == clsid)
                     {
-                        return unchecked((int)HResult.E_FAIL);
+                        return new ComResult(HResult.E_FAIL);
                     }
 
                     baseFilterUpstream = GetUpstreamFilter(baseFilterUpstream);
                 } while (baseFilterUpstream != null);
 
-                return _FilterGraph2.ConnectDirect(ppinOut, ppinIn, pmt);
+                return _FilterGraph.ConnectDirect(ppinOut, ppinIn, pmt);
             }
         }
-
 
         public int Reconnect(IPin ppin)
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.Reconnect(ppin);
+                return _FilterGraph.Reconnect(ppin);
             }
         }
-
 
         public int Disconnect(IPin ppin)
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.Disconnect(ppin);
+                return _FilterGraph.Disconnect(ppin);
             }
         }
-
 
         public int SetDefaultSyncSource()
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.SetDefaultSyncSource();
+                return _FilterGraph.SetDefaultSyncSource();
             }
         }
-
 
         public int Connect(IPin ppinOut, IPin ppinIn)
         {
@@ -190,30 +188,29 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             {
                 if (ppinOut == null)
                 {
-                    return HResult.E_POINTER.AsInt();
+                    return new ComResult(HResult.E_POINTER);
                 }
 
-                if (IsPinDirection(ppinOut, PinDirection.Output).IsSuccess() ||
-                    (ppinIn != null && IsPinDirection(ppinIn, PinDirection.Input).IsSuccess()))
+                ComResult result;
+                if (ComResult.FAILED(result = IsPinDirection(ppinOut, PinDirection.Output)) ||
+                    (ppinIn != null && ComResult.FAILED(result = IsPinDirection(ppinIn, PinDirection.Input))))
                 {
-                    return HResult.E_FAIL.AsInt();
+                    return result;
                 }
 
-                if (!IsPinConnected(ppinOut).IsSuccess() ||
-                    (ppinIn != null && IsPinConnected(ppinIn).IsSuccess(true)))
+                if (ComResult.FAILED(result = IsPinConnected(ppinOut)) ||
+                    (ppinIn != null && ComResult.SUCCESS(IsPinConnected(ppinIn), true)))
                 {
                     return unchecked((int)HResult.E_FAIL);
                 }
 
-                int result;
                 bool bDeadEnd = true;
 
                 // 1. Try a direct connection between the filters with no intermediate filters.
                 {
                     if (ppinIn != null)
                     {
-                        result = ConnectDirect(ppinOut, ppinIn, null);
-                        if (result.IsSuccess())
+                        if (ComResult.SUCCESS(result = ConnectDirect(ppinOut, ppinIn, null)))
                         {
                             return result;
                         }
@@ -222,8 +219,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     {
                         if (ppinOut is IStreamBuilder streamBuilder)
                         {
-                            result = streamBuilder.Render(ppinOut, this);
-                            if (result.IsSuccess())
+                            if (ComResult.SUCCESS(result = streamBuilder.Render(ppinOut, this)))
                             {
                                 return result;
                             }
@@ -235,7 +231,8 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                 // 2. Try cached filters.
                 {
-                    if (this is IGraphConfig graphConfig)
+                    //TODO: _FilterGraph should be `this`, but this class is never an IGraphConfig.
+                    if (_FilterGraph is IGraphConfig graphConfig)
                     {
                         foreach (var filter in EnumCachedFilters(graphConfig))
                         {
@@ -246,14 +243,14 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                             graphConfig.RemoveFilterFromCache(filter);
 
-                            if (ConnectFilterDirect(out ppinOut, filter, null).IsSuccess())
+                            if (ComResult.SUCCESS(result = ConnectFilterDirect(out ppinOut, filter, null)))
                             {
                                 if (!IsStreamEnd(filter))
                                 {
                                     bDeadEnd = false;
                                 }
 
-                                if ((result = ConnectFilter(filter, ppinIn)).IsSuccess())
+                                if (ComResult.SUCCESS(result = ConnectFilter(filter, ppinIn)))
                                 {
                                     return result;
                                 }
@@ -276,10 +273,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                             continue;
                         }
 
-                        // TODO: This is a hack. Move to CLSID.
-                        // ffdshow
-                        if (CLSID.GetCLSID(ppinOut) == new Guid("04FE9017-F873-410E-871E-AB91661A4EF7") &&
-                            CLSID.GetCLSID(filter) == new Guid("E30629D2-27E5-11CE-875D-00608CB78066"))
+                        // FFDShow
+                        if (WindowsInterop.GetCLSID(ppinOut) == IID.FFDShowVideoDecoder &&
+                            WindowsInterop.GetCLSID(filter) == IID.AudioRecord)
                         {
                             continue;
                         }
@@ -289,14 +285,14 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                     foreach (var filter in filters)
                     {
-                        if (ConnectFilterDirect(out ppinOut, filter, null).IsSuccess())
+                        if (ComResult.SUCCESS(result = ConnectFilterDirect(out ppinOut, filter, null)))
                         {
                             if (!IsStreamEnd(filter))
                             {
                                 bDeadEnd = false;
                             }
 
-                            if ((result = ConnectFilter(filter, ppinIn)).IsSuccess())
+                            if (ComResult.SUCCESS(result = ConnectFilter(filter, ppinIn)))
                             {
                                 return result;
                             }
@@ -308,7 +304,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                 // 4. Look up filters in the registry.
                 {
-                    var filterList = new FGFilterList();
+                    var filterList = new FFilterContainerCollection();
                     var mediaTypes = ExtractMediaTypes(ppinOut);
 
                     foreach (var filter in _TransformFilters)
@@ -328,67 +324,62 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     }
 
                     if (mediaTypes.Count != 0 &&
-                        _FilterMapper.EnumMatchingFilters(
+                        ComResult.SUCCESS(result = _FilterMapper.EnumMatchingFilters(
                             out IEnumMoniker enumMoniker, 0, false, Merit.DoNotUse, true,
                             mediaTypes.Count / 2, mediaTypes.ToArray(), null, null, false,
-                            ppinIn != null, 0, null, null, null).IsSuccess())
+                            ppinIn != null, 0, null, null, null)))
                     {
-                        var monikers = new IMoniker[1];
-                        while (enumMoniker.Next(1, monikers, IntPtr.Zero).IsSuccess())
+                        var monikers = new IMoniker[] { null };
+                        while (ComResult.SUCCESS(result = enumMoniker.Next(1, monikers, IntPtr.Zero)))
                         {
-                            var filterRegistry = new FGFilterRegistry(monikers[0]);
+                            var filterRegistry = new FFilterRegistry(monikers[0]);
                             filterList.Add(filterRegistry, 0, filterRegistry.CheckTypes(mediaTypes, true));
                         }
                     }
 
                     // Let's check whether the madVR allocator presenter is in our list.
                     // It should be if madVR is selected as the video renderer.
-                    FGFilterBase madVRAllocatorPresenter = null;
-                    foreach (var filter in filterList)
+                    AFilterBase madVRAllocatorPresenter = null;
+                    foreach (var filterContainer in filterList)
                     {
-                        if (filter.GUID == CLSID.MadVRAllocatorPresenter)
+                        if (filterContainer.Filter.GUID == IID.MadVRAllocatorPresenter)
                         {
-                            madVRAllocatorPresenter = filter;
+                            madVRAllocatorPresenter = filterContainer.Filter;
                             break;
                         }
                     }
 
                     const string madVRRendererName = "madVR Renderer";
-                    int madVRIndex = -1;
-                    for (int i = 0; i < filterList.Count; ++i)
+                    foreach (var filterContainer in filterList)
                     {
-                        FGFilterBase filter = filterList[i];
                         // Prevent duplicate madVR entries in the graph.
                         FindFilterByName(madVRRendererName, out IBaseFilter madVRFilter);
-                        if (madVRFilter != null && filter.Name == madVRRendererName)
+                        if (madVRFilter != null && filterContainer.Filter.Name == madVRRendererName)
                         {
                             continue;
                         }
 
-                        if (madVRAllocatorPresenter != null && filter.GUID == CLSID.MadVR)
+                        if (madVRAllocatorPresenter != null && filterContainer.Filter.GUID == IID.MadVR)
                         {
-                            madVRIndex = i;
-
                             // Add a "temporary reference" for ease of use later.
                             // We will actually overwrite the original pointer in a bit.
-                            filter = madVRAllocatorPresenter;
+                            filterContainer.Filter = madVRAllocatorPresenter;
                         }
 
-                        _Logger.Debug($"{nameof(FGGraph)} --> Connecting filter {filter.Name}.");
+                        _Logger.Debug($"{nameof(NativeGraph)} --> Connecting filter {filterContainer.Filter.Name}.");
 
-                        if (!filter.Create(out IBaseFilter baseFilter, out IList<object> Unknowns).IsSuccess())
+                        if (ComResult.FAILED(result = filterContainer.Filter.Create(out IBaseFilter baseFilter, out IList<object> unknowns)))
                         {
-                            _Logger.Warn($"{nameof(FGGraph)} --> Unable to create filter {filter.Name}.");
+                            _Logger.Warn($"{nameof(NativeGraph)} --> Unable to create filter {filterContainer.Filter.Name}.");
                         }
 
-                        if (!AddFilter(baseFilter, filter.Name).IsSuccess())
+                        if (ComResult.FAILED(result = AddFilter(baseFilter, filterContainer.Filter.Name)))
                         {
-                            _Logger.Warn($"{nameof(FGGraph)} --> Unable to create filter {filter.Name}.");
+                            _Logger.Warn($"{nameof(NativeGraph)} --> Unable to create filter {filterContainer.Filter.Name}.");
                             continue;
                         }
 
-                        result = ConnectFilterDirect(out ppinOut, baseFilter, null);
-                        if (result.IsSuccess())
+                        if (ComResult.SUCCESS(result = ConnectFilterDirect(out ppinOut, baseFilter, null)))
                         {
                             if (!IsStreamEnd(baseFilter))
                             {
@@ -400,10 +391,10 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                                 result = ConnectFilter(baseFilter, ppinIn);
                             }
 
-                            if (result.IsSuccess())
+                            if (ComResult.SUCCESS(result))
                             {
-                                _Unknowns.AddRange(Unknowns);
-                                var mixerPinConfig = Unknowns.FirstOrDefault(unk => unk is IMixerPinConfig && CLSID.GetCLSID(unk) == CLSID.IMixerPinConfig, null);
+                                _Unknowns.AddRange(unknowns);
+                                var mixerPinConfig = unknowns.FirstOrDefault(unk => unk is IMixerPinConfig && WindowsInterop.GetCLSID(unk) == IID.IMixerPinConfig, null);
                                 ((IMixerPinConfig)mixerPinConfig)?.SetAspectRatioMode(AspectRatioMode.Stretched);
 
                                 if (baseFilter is IVMRAspectRatioControl arc)
@@ -426,76 +417,71 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                                     _Unknowns.Add(mb9);
                                 }
 
+                                //TODO: Finish implementation.
                                 //if (baseFilter is IMFGetService mfgs && CLSID.GetCLSID(mfgs) == CLSID.GetCLSIDOf<IMFGetService>())
-                                //{
-                                //    CComPtr<IMFVideoDisplayControl> pMFVDC;
-                                //    CComPtr<IMFVideoMixerBitmap> pMFMB;
-                                //    CComPtr<IMFVideoProcessor> pMFVP;
+                                {
+                                    //    CComPtr<IMFVideoDisplayControl> pMFVDC;
+                                    //    CComPtr<IMFVideoMixerBitmap> pMFMB;
+                                    //    CComPtr<IMFVideoProcessor> pMFVP;
 
-                                //    if (mfgs.GetService(MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&pMFVDC)).IsSuccess())
-                                //    {
-                                //        _Unknowns.Add(pMFVDC);
-                                //    }
+                                    //    if (mfgs.GetService(MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&pMFVDC)).IsSuccess())
+                                    //    {
+                                    //        _Unknowns.Add(pMFVDC);
+                                    //    }
 
-                                //    if (mfgs.GetService(MR_VIDEO_MIXER_SERVICE, IID_PPV_ARGS(&pMFMB)).IsSuccess())
-                                //    {
-                                //        _Unknowns.Add(pMFMB);
-                                //    }
+                                    //    if (mfgs.GetService(MR_VIDEO_MIXER_SERVICE, IID_PPV_ARGS(&pMFMB)).IsSuccess())
+                                    //    {
+                                    //        _Unknowns.Add(pMFMB);
+                                    //    }
 
-                                //    if (mfgs.GetService(MR_VIDEO_MIXER_SERVICE, IID_PPV_ARGS(&pMFVP)).IsSuccess())
-                                //    {
-                                //        _Unknowns.Add(pMFVP);
-                                //    }
+                                    //    if (mfgs.GetService(MR_VIDEO_MIXER_SERVICE, IID_PPV_ARGS(&pMFVP)).IsSuccess())
+                                    //    {
+                                    //        _Unknowns.Add(pMFVP);
+                                    //    }
 
-                                //    if (madVRAllocatorPresenter != null)
-                                //    {
-                                //        // Hook DXVA to have status and logging.
-                                //        CComPtr<IDirectXVideoDecoderService> pDecoderService;
-                                //        CComPtr<IDirect3DDeviceManager9> pDeviceManager;
-                                //        HANDLE hDevice = INVALID_HANDLE_VALUE;
+                                    if (madVRAllocatorPresenter != null)
+                                    {
+                                        //        // Hook DXVA to have status and logging.
+                                        //        CComPtr<IDirectXVideoDecoderService> pDecoderService;
+                                        //        CComPtr<IDirect3DDeviceManager9> pDeviceManager;
+                                        //        HANDLE hDevice = INVALID_HANDLE_VALUE;
 
-                                //        if (mfgs->GetService(MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&pDeviceManager)).IsSuccess()
-                                //            && pDeviceManager->OpenDeviceHandle(&hDevice).IsSuccess()
-                                //            && pDeviceManager->GetVideoService(hDevice, IID_PPV_ARGS(&pDecoderService)).IsSuccess())
-                                //        {
-                                //            HookDirectXVideoDecoderService(pDecoderService);
-                                //            pDeviceManager->CloseDeviceHandle(hDevice);
-                                //        }
-                                //    }
-                                //}
+                                        //        if (mfgs->GetService(MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&pDeviceManager)).IsSuccess()
+                                        //            && pDeviceManager->OpenDeviceHandle(&hDevice).IsSuccess()
+                                        //            && pDeviceManager->GetVideoService(hDevice, IID_PPV_ARGS(&pDecoderService)).IsSuccess())
+                                        //        {
+                                        //            HookDirectXVideoDecoderService(pDecoderService);
+                                        //            pDeviceManager->CloseDeviceHandle(hDevice);
+                                        //        }
+                                    }
+                                }
 
                                 return result;
                             }
                         }
                     }
-
-                    if (madVRIndex >= 0)
-                    {
-                        // The pure madVR filter was selected (without the allocator presenter)
-                        // subtitles, OSD etc don't work correctly without the allocator presenter
-                        // so we prefer the allocator presenter over the pure filter.
-                        filterList.SetFilter(madVRIndex, madVRAllocatorPresenter);
-                    }
                 }
 
                 if (bDeadEnd)
                 {
-                    //var streamDeadEnd = new StreamDeadEnd();
-                    //streamDeadEnd.Add(m_streamPath);
-                    //int skip = 0;
-                    //foreach (var mediaType in EnumMediaTypes(ppinOut))
-                    //{
-                    //    if (mediaType.majorType == MEDIATYPE_Stream && mediaType.subType == MEDIASUBTYPE_NULL)
-                    //    {
-                    //        ++skip;
-                    //    }
+                    var streamDeadEnd = new FStreamDeadEndCollection();
+                    streamDeadEnd.AddRange(_StreamPaths);
 
-                    //    streamDeadEnd.MediaTypes.Add(mediaType);
-                    //}
+                    int skip = 0;
+                    foreach (var mediaType in EnumMediaTypes(ppinOut))
+                    {
+                        if (mediaType.majorType == IID.MEDIATYPE_Stream && 
+                            mediaType.subType == Guid.Empty)
+                        {
+                            ++skip;
+                        }
 
-                    //if (skip < (int)streamDeadEnd.MediaTypes.Length) {
-                    //    StreamDeadEnds.Add(streamDeadEnd);
-                    //}
+                        streamDeadEnd.MediaTypes.Add(mediaType);
+                    }
+
+                    if (skip < streamDeadEnd.MediaTypes.Count) {
+                        _StreamDeadEnds.AddRange(streamDeadEnd);
+                    }
                 }
 
                 return ppinIn != null ? unchecked((int)0x80040217) : unchecked((int)0x80040218);
@@ -516,27 +502,28 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             lock (this)
             {
-                StreamPath.Clear();
-                StreamDeadEnds.Clear();
+                _StreamPaths.Clear();
+                _StreamDeadEnds.Clear();
 
-                List<StreamDeadEnd> deadEnds = new List<StreamDeadEnd>();
+                var deadEnds = new FStreamDeadEndCollection();
 
-                int result;
-                int resultRFS = HResult.S_OK.AsInt();
+                ComResult result;
+                // ReSharper disable once InconsistentNaming
+                ComResult resultRFS = HResult.S_OK;
 
-                if (!(result = EnumSourceFilters(lpcwstrFile, out FGFilterList filterList)).IsSuccess())
+                if (ComResult.FAILED(result = EnumSourceFilters(lpcwstrFile, out FFilterContainerCollection filterList)))
                 {
                     return result;
                 }
 
-                foreach (var filter in filterList)
+                foreach (var filterContainer in filterList)
                 {
-                    if ((result = AddSourceFilter(filter, lpcwstrFile, filter.Name, out IBaseFilter baseFilter)).IsSuccess())
+                    if (ComResult.SUCCESS(result = AddSourceFilter(filterContainer.Filter, lpcwstrFile, filterContainer.Filter.Name, out IBaseFilter baseFilter)))
                     {
-                        StreamPath.Clear();
-                        StreamDeadEnds.Clear();
+                        _StreamPaths.Clear();
+                        _StreamDeadEnds.Clear();
 
-                        if (!(result = ConnectFilter(baseFilter, null)).IsSuccess())
+                        if (ComResult.FAILED(result = ConnectFilter(baseFilter, null)))
                         {
                             return result;
                         }
@@ -544,207 +531,107 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         NukeDownstream(baseFilter);
                         RemoveFilter(baseFilter);
 
-                        deadEnds.AddRange(StreamDeadEnds);
+                        deadEnds.AddRange(_StreamDeadEnds);
                     }
-                    else if (filter.GUID == CLSID.GetCLSIDOf<RARFileSource>() && ((result >> 16) & 0x1fff) == 4)
+                    else if (filterContainer.Filter.GUID == WindowsInterop.GetCLSID<FRARFileSource>() && ((result >> 16) & 0x1fff) == 4)
                     {
                         resultRFS = result;
                     }
                 }
 
-                StreamDeadEnds.AddRange(deadEnds);
+                _StreamDeadEnds.AddRange(deadEnds);
 
-                return resultRFS != HResult.S_OK.AsInt() ? resultRFS : result;
+                return resultRFS != HResult.S_OK ? resultRFS : result;
             }
         }
-
 
         public int AddSourceFilter(string lpcwstrFileName, string lpcwstrFilterName, out IBaseFilter ppFilter)
         {
             lock (this)
             {
-                int result;
-                if (!(result = EnumSourceFilters(lpcwstrFileName, out FGFilterList filterList)).IsSuccess())
+                ppFilter = null;
+
+                ComResult result;
+                if (ComResult.FAILED(result = EnumSourceFilters(lpcwstrFileName, out FFilterContainerCollection filterList)))
                 {
-                    ppFilter = null;
                     return result;
                 }
 
-                foreach (var filter in filterList)
+                foreach (var filterContainer in filterList)
                 {
-                    if ((result = AddSourceFilter(filter, lpcwstrFileName, lpcwstrFilterName, out ppFilter)).IsSuccess())
+                    if (ComResult.SUCCESS(result = AddSourceFilter(filterContainer.Filter, lpcwstrFileName, lpcwstrFilterName, out ppFilter)))
                     {
                         return result;
                     }
                 }
-
-                ppFilter = null;
-                return HResult.E_FAIL.AsInt();
+                
+                return new ComResult(HResult.E_FAIL);
             }
         }
-
-        private int AddSourceFilter(FGFilterBase filter, string lpcwstrFileName, string lpcwstrFilterName, out IBaseFilter baseFilter)
-        {
-            int result;
-            if (!(result = filter.Create(out IBaseFilter createFilter, out IList<object> unks)).IsSuccess())
-            {
-                baseFilter = null;
-                return result;
-            }
-            
-
-            //CComQIPtr<IFileSourceFilter> pFSF = pBF;
-            //if (!pFSF)
-            //{
-            //    return E_NOINTERFACE;
-            //}
-
-            //if (FAILED(hr = AddFilter(pBF, lpcwstrFilterName)))
-            //{
-            //    return hr;
-            //}
-
-            //const AM_MEDIA_TYPE* pmt = nullptr;
-
-            //CMediaType mt;
-            //const CAtlList<GUID>&types = pFGF->GetTypes();
-            //if (types.GetCount() == 2 && (types.GetHead() != GUID_NULL || types.GetTail() != GUID_NULL))
-            //{
-            //    mt.majortype = types.GetHead();
-            //    mt.subtype = types.GetTail();
-            //    pmt = &mt;
-            //}
-
-            //// sometimes looping with AviSynth
-            //if (FAILED(hr = pFSF->Load(lpcwstrFileName, pmt)))
-            //{
-            //    RemoveFilter(pBF);
-            //    return hr;
-            //}
-
-            //// doh :P
-            //BeginEnumMediaTypes(GetFirstPin(pBF, PINDIR_OUTPUT), pEMT, pmt2) {
-            //    static const GUID guid1 =
-            //    { 0x640999A0, 0xA946, 0x11D0, { 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
-            //    static const GUID guid2 =
-            //    { 0x640999A1, 0xA946, 0x11D0, { 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
-            //    static const GUID guid3 =
-            //    { 0xD51BD5AE, 0x7548, 0x11CF, { 0xA5, 0x20, 0x00, 0x80, 0xC7, 0x7E, 0xF5, 0x8A } };
-
-            //    if (pmt2->subtype == guid1 || pmt2->subtype == guid2 || pmt2->subtype == guid3)
-            //    {
-            //        RemoveFilter(pBF);
-            //        pFGF = DEBUG_NEW CFGFilterRegistry(CLSID_NetShowSource);
-            //        hr = AddSourceFilter(pFGF, lpcwstrFileName, lpcwstrFilterName, ppBF);
-            //        delete pFGF;
-            //        return hr;
-            //    }
-            //}
-            //EndEnumMediaTypes(pmt2);
-
-            //*ppBF = pBF.Detach();
-
-            //m_pUnks.AddTailList(&pUnks);
-
-            return HResult.S_OK.AsInt();
-        }
-
 
         public int SetLogFile(IntPtr hFile)
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.SetLogFile(hFile);
+                return _FilterGraph.SetLogFile(hFile);
             }
         }
-
 
         public int Abort()
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.Abort();
+                return _FilterGraph.Abort();
             }
         }
-
 
         public int ShouldOperationContinue()
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.ShouldOperationContinue();
+                return _FilterGraph.ShouldOperationContinue();
             }
         }
-
 
         public int AddSourceFilterForMoniker(IMoniker pMoniker, IBindCtx pCtx, string lpcwstrFilterName, out IBaseFilter ppFilter)
         {
-            if (_FilterGraph2 == null)
-            {
-                ppFilter = null;
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.AddSourceFilterForMoniker(pMoniker, pCtx, lpcwstrFilterName, out ppFilter);
+                return _FilterGraph.AddSourceFilterForMoniker(pMoniker, pCtx, lpcwstrFilterName, out ppFilter);
             }
         }
-
 
         public int ReconnectEx(IPin ppin, AMMediaType pmt)
         {
-            if (_FilterGraph2 == null)
-            {
-                return HResult.E_UNEXPECTED.AsInt();
-            }
-
             lock (this)
             {
-                return _FilterGraph2.ReconnectEx(ppin, pmt);
+                return _FilterGraph.ReconnectEx(ppin, pmt);
             }
         }
-
 
         public int RenderEx(IPin pPinOut, AMRenderExFlags dwFlags, IntPtr pvContext)
         {
             throw new NotImplementedException();
         }
 
-
         public int IsPinDirection(IPin pPin, PinDirection dir)
         {
             lock (this)
             {
+                int result;
                 if (pPin == null)
                 {
-                    return HResult.E_POINTER.AsInt();
+                    return new ComResult(HResult.E_POINTER);
                 }
 
-                if (!pPin.QueryDirection(out PinDirection pinDir).IsSuccess())
+                if (ComResult.FAILED(result = pPin.QueryDirection(out PinDirection pinDir)))
                 {
-                    return HResult.E_FAIL.AsInt();
+                    return result;
                 }
 
-                return dir == pinDir ? HResult.S_OK.AsInt() : HResult.S_FALSE.AsInt();
+                return new ComResult(dir == pinDir ? HResult.S_OK : HResult.S_FALSE);
             }
         }
-
 
         public int IsPinConnected(IPin pPin)
         {
@@ -752,46 +639,45 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             {
                 if (pPin == null)
                 {
-                    return HResult.E_POINTER.AsInt();
+                    return new ComResult(HResult.E_POINTER);
                 }
 
-                return pPin.ConnectedTo(out IPin pinTo).IsSuccess() && pinTo != null ? HResult.S_OK.AsInt() : HResult.S_FALSE.AsInt();
+                bool bSuccess = ComResult.SUCCESS(pPin.ConnectedTo(out IPin pinTo));
+
+                return new ComResult(bSuccess && pinTo != null ? HResult.S_OK : HResult.S_FALSE);
             }
         }
-
 
         public int ConnectFilter(IBaseFilter pBF, IPin pPinIn)
         {
             throw new NotImplementedException();
         }
 
-
         public int ConnectFilter(out IPin pPinOut, IBaseFilter pBF)
         {
             throw new NotImplementedException();
         }
-
 
         public int ConnectFilterDirect(out IPin pPinOut, IBaseFilter pBF, AMMediaType pmt)
         {
             throw new NotImplementedException();
         }
 
-
         public int NukeDownstream(object pUnk)
         {
             throw new NotImplementedException();
         }
 
-
         public int FindInterface(ref Guid iid, out IntPtr ppv, bool bRemove)
         {
             lock (this)
             {
+                ppv = IntPtr.Zero;
+
                 foreach (var unk in _Unknowns)
                 {
                     IntPtr unkPtr = Marshal.GetIUnknownForObject(unk);
-                    if (Marshal.QueryInterface(unkPtr, ref iid, out ppv).IsSuccess())
+                    if (ComResult.SUCCESS(Marshal.QueryInterface(unkPtr, ref iid, out ppv)))
                     {
                         if (bRemove)
                         {
@@ -799,17 +685,15 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         }
 
                         Marshal.Release(unkPtr);
-                        return HResult.S_OK.AsInt();
+                        return new ComResult(HResult.S_OK);
                     }
 
                     Marshal.Release(unkPtr);
                 }
 
-                ppv = IntPtr.Zero;
-                return HResult.E_NOINTERFACE.AsInt();
+                return new ComResult(HResult.E_NOINTERFACE);
             }
         }
-
 
         public int AddToROT()
         {
@@ -817,15 +701,15 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             {
                 if (_Register != 0)
                 {
-                    return HResult.S_FALSE.AsInt();
+                    return new ComResult(HResult.S_FALSE);
                 }
 
-                int result;
+                ComResult result;
 
-                if ((result = Native.GetRunningObjectTable(0, out IRunningObjectTable rot)).IsSuccess() &&
-                    (result = Native.CreateItemMoniker("!", _GraphId, out IMoniker moniker)).IsSuccess())
+                if (ComResult.SUCCESS(result = WindowsInterop.GetRunningObjectTable(0, out IRunningObjectTable rot)) &&
+                    ComResult.SUCCESS(result = WindowsInterop.CreateItemMoniker("!", _GraphId, out IMoniker moniker)))
                 {
-                    _Register = rot.Register((int)ERunningObjectTableFlags.RegistrationKeepAlive, this, moniker);
+                    _Register = (ulong)rot.Register((int)ERunningObjectTableFlags.RegistrationKeepAlive, this, moniker);
                 }
 
                 return result;
@@ -838,14 +722,14 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             {
                 if (_Register == 0)
                 {
-                    return HResult.S_FALSE.AsInt();
+                    return new ComResult(HResult.S_FALSE);
                 }
 
-                int result;
+                ComResult result;
 
-                if ((result = Native.GetRunningObjectTable(0, out IRunningObjectTable rot)).IsSuccess())
+                if (ComResult.SUCCESS(result = WindowsInterop.GetRunningObjectTable(0, out IRunningObjectTable rot)))
                 {
-                    rot.Revoke(_Register);
+                    rot.Revoke((int)_Register);
                     _Register = 0;
                 }
 
@@ -853,40 +737,271 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             }
         }
 
-
         public uint GetCount()
         {
             lock (this)
             {
-                return (uint)StreamDeadEnds.Count;
+                return (uint)_StreamDeadEnds.Count;
             }
         }
 
         /// <inheritdoc />
-        public int GetDeadEnd(int iIndex, IList<string> path, IList<FMediaType> mts)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        public int GetDeadEnd(int iIndex, IList<string> path, IList<MediaType> mts)
+        public int GetDeadEnd(int iIndex, IList<string> path, IList<AMMediaType> mts)
         {
             lock (this)
             {
-                if (!StreamDeadEnds.IsValidIndex(iIndex))
+                if (!_StreamDeadEnds.IsValidIndex(iIndex))
                 {
-                    return HResult.E_FAIL.AsInt();
+                    return new ComResult(HResult.E_FAIL);
                 }
 
                 path.Clear();
                 mts.Clear();
 
-                var deadEnd = StreamDeadEnds[iIndex];
-                path.Add($"{deadEnd.Filter}::{deadEnd.Pin}");
-                mts.Add(deadEnd.MediaType);
+                var deadEnds = _StreamDeadEnds[iIndex];
+                foreach (var deadEnd in deadEnds)
+                {
+                    path.Add($"{deadEnd.Filter}::{deadEnd.Pin}");
+                }
 
-                return HResult.S_OK.AsInt();
+                mts.AddRange(_StreamDeadEnds[iIndex].MediaTypes);
+
+                return new ComResult(HResult.S_OK);
             }
+        }
+
+        #endregion
+
+        private AFilterBase LookupFilterRegistry(Guid guid, IReadOnlyList<AFilterBase> filters, Merit fallbackMerit = Merit.DoNotUse)
+        {
+            foreach (var filter in filters)
+            {
+                if (filter.GUID == guid)
+                {
+                    return new FFilterRegistry(guid, merit: filter.Merit);
+                }
+            }
+
+            return new FFilterRegistry(guid, merit: fallbackMerit);
+        }
+
+        private int EnumSourceFilters(string fileName, out FFilterContainerCollection filterList)
+        {
+            if (string.IsNullOrEmpty(fileName))
+            {
+                filterList = null;
+                return new ComResult(HResult.E_POINTER);
+            }
+
+            var fn = fileName.TrimStart();
+            var protocol = fn.Substring(0, fn.IndexOf(':') + 1).TrimEnd(':').ToLowerInvariant();
+            var ext = Path.GetExtension(fileName).ToLowerInvariant();
+
+            FileInfo file = null;
+            if (protocol.Length <= 1 || protocol == "file")
+            {
+                file = new FileInfo(fn);
+
+                // In case of audio CDs with extra content, the audio tracks
+                // cannot be accessed directly so we have to try opening it.
+                if (!file.Exists && ext != ".cda")
+                {
+                    filterList = null;
+                    return new ComResult(HResult.E_FAIL);
+                }
+            }
+
+            filterList = new FFilterContainerCollection();
+
+            if (file == null || !file.Exists)
+            {
+                // Internet protocol.
+                foreach (var filter in _SourceFilters)
+                {
+                    if (filter.Protocols.Contains(protocol))
+                    {
+                        filterList.Add(filter, 0, false);
+                    }
+                }
+            }
+            else
+            {
+                // Internal.
+                foreach (var filter in _SourceFilters)
+                {
+                    foreach (var bytes in filter.CheckBytes)
+                    {
+                        if (CheckBytes(file, bytes))
+                        {
+                            filterList.Add(filter, 1, false);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(ext))
+            {
+                // Internal / file extension
+
+                foreach (var filter in _SourceFilters)
+                {
+                    if (filter.Extensions.Contains(ext))
+                    {
+                        filterList.Add(filter, 2, false);
+                    }
+                }
+            }
+
+            // The rest.
+            foreach (var filter in _SourceFilters)
+            {
+                if (filter.Protocols.Count == 0 && filter.CheckBytes.Count == 0 && filter.Extensions.Count == 0)
+                {
+                    filterList.Add(filter, 3, false);
+                }
+            }
+
+            if (file == null || !file.Exists)
+            {
+                using (var reg = new RegistryKeyReference($"{protocol}\\Extensions", RegistryHive.ClassesRoot))
+                {
+                    if (Guid.TryParse(reg.GetString(ext), out Guid guid))
+                    {
+                        filterList.Add(LookupFilterRegistry(guid, _OverrideFilters), 4, false);
+                    }
+                }
+
+                using (var reg = new RegistryKeyReference($"{protocol}", RegistryHive.ClassesRoot))
+                {
+                    if (Guid.TryParse(reg.GetString("Source Filter"), out Guid guid))
+                    {
+                        filterList.Add(LookupFilterRegistry(guid, _OverrideFilters), 5, false);
+                    }
+                }
+            }
+            else
+            {
+                using (var key = new RegistryKeyReference("Media Type", RegistryHive.ClassesRoot))
+                {
+                    foreach (var enumKey in key.IterateSubKeys())
+                    {
+                        if (!Guid.TryParse(enumKey.Name, out Guid majorType))
+                        {
+                            continue;
+                        }
+
+                        using (var subkeyLevel1 = new RegistryKeyReference(key, enumKey.Name))
+                        {
+                            foreach (var enumSubKey in subkeyLevel1.IterateSubKeys())
+                            {
+                                if (!Guid.TryParse(enumSubKey.Name, out Guid subType))
+                                {
+                                    continue;
+                                }
+
+                                Guid.TryParse(enumSubKey.GetString("Source Filter"), out Guid clsid);
+                                foreach (var regValueEntry in enumSubKey.GetValues())
+                                {
+                                    var regValue = regValueEntry.Value.ToString();
+                                    if (CheckBytes(file, regValue))
+                                    {
+                                        var filter = LookupFilterRegistry(clsid, _OverrideFilters);
+                                        filter.AddType(majorType, subType);
+                                        filterList.Add(filter, 0, false);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Try and get the filters by the extension.
+            if (!string.IsNullOrEmpty(ext))
+            {
+                using (var extKey = new RegistryKeyReference($"Media Type\\Extensions\\{ext}", RegistryHive.ClassesRoot))
+                {
+                    var sourceFilterGuidRaw = extKey.GetString("Source Filter");
+                    if (!string.IsNullOrWhiteSpace(sourceFilterGuidRaw) &&
+                        Guid.TryParse(sourceFilterGuidRaw, out Guid sourceFilterGuid) &&
+                        sourceFilterGuid != Guid.Empty)
+                    {
+                        Guid.TryParse(extKey.GetString("MediaType"), out Guid majorType);
+                        Guid.TryParse(extKey.GetString("SubType"), out Guid subType);
+
+                        var filter = LookupFilterRegistry(sourceFilterGuid, _OverrideFilters);
+                        filter.AddType(majorType, subType);
+                        filterList.Add(filter, 7, false);
+                    }
+                }
+            }
+
+            var arFilter = LookupFilterRegistry(IID.AsyncReader, _OverrideFilters);
+            arFilter.AddType(IID.MEDIATYPE_Stream, Guid.Empty);
+            filterList.Add(arFilter, 9, false);
+
+            return new ComResult(HResult.S_OK);
+        }
+
+        private int AddSourceFilter(AFilterBase filter, string lpcwstrFileName, string lpcwstrFilterName, out IBaseFilter baseFilter)
+        {
+            ComResult result;
+            baseFilter = null;
+
+            if (ComResult.FAILED(result = filter.Create(out IBaseFilter createFilter, out IList<object> unks)))
+            {
+                return result;
+            }
+
+            if (!(createFilter is IFileSourceFilter fileSourceFilter))
+            {
+                return new ComResult(HResult.E_NOINTERFACE);
+            }
+
+            if (ComResult.FAILED(result = AddFilter(createFilter, lpcwstrFilterName)))
+            {
+                return result;
+            }
+
+            AMMediaType amMediaType = null;
+            var types = filter.Types;
+
+            if (filter.Types.Count == 2 &&
+                types.First() != Guid.Empty &&
+                types.Last() != Guid.Empty)
+            {
+                amMediaType = new FMediaType(types.First(), types.Last());
+            }
+
+            if (ComResult.FAILED(result = fileSourceFilter.Load(lpcwstrFileName, amMediaType)))
+            {
+                RemoveFilter(createFilter);
+                return result;
+            }
+
+            foreach (var mediaType in EnumMediaTypes(GetFirstPin(createFilter, PinDirection.Output)))
+            {
+                //    static const GUID guid1 =
+                //    { 0x640999A0, 0xA946, 0x11D0, { 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
+                //    static const GUID guid2 =
+                //    { 0x640999A1, 0xA946, 0x11D0, { 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
+                //    static const GUID guid3 =
+                //    { 0xD51BD5AE, 0x7548, 0x11CF, { 0xA5, 0x20, 0x00, 0x80, 0xC7, 0x7E, 0xF5, 0x8A } };
+                if (mediaType.subType == guid1 ||
+                    mediaType.subType == guid2 ||
+                    mediaType.subType == guid3)
+                {
+                    RemoveFilter(createFilter);
+                    return AddSourceFilter(new FFilterRegistry(IID.NetShowSource), lpcwstrFileName, lpcwstrFilterName, out baseFilter);
+                }
+            }
+
+            baseFilter = createFilter;
+            _Unknowns.AddRange(unks);
+
+            return new ComResult(HResult.S_OK);
         }
 
         private int CountPins(IBaseFilter filter, out int nIn, out int nOut, out int nInC, out int nOutC)
@@ -993,268 +1108,68 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             if (baseFilter != null && baseFilter.EnumPins(out var enumPins) >= 0)
             {
-                // DirectShowLib messed up the interface on this one, but we'll try
-                // and make do.
-                var pins = new IPin[1];
+                var pins = new IPin[] { null };
                 while (enumPins.Next(1, pins, IntPtr.Zero) == 0)
                 {
                     yield return pins[0];
-                    pins = new IPin[1];
+                    pins[0] = null;
                 }
             }
         }
 
+        private IPin GetFirstPin(IBaseFilter baseFilter, PinDirection direction)
+        {
+            if (baseFilter != null)
+            {
+                foreach (var pin in EnumPins(baseFilter))
+                {
+                    if (ComResult.SUCCESS(pin.QueryDirection(out PinDirection dir)) && direction == dir)
+                    {
+                        return pin;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private IEnumerable<AMMediaType> EnumMediaTypes(IPin pin)
         {
-            if (pin != null && pin.EnumMediaTypes(out IEnumMediaTypes enumMediaTypes).IsSuccess())
+            if (pin != null && ComResult.SUCCESS(pin.EnumMediaTypes(out IEnumMediaTypes enumMediaTypes)))
             {
-                var mediaTypes = new AMMediaType[1];
-                while (enumMediaTypes.Next(1, mediaTypes, IntPtr.Zero).IsSuccess(true))
+                var mediaTypes = new AMMediaType[] { null };
+                while (ComResult.SUCCESS(enumMediaTypes.Next(1, mediaTypes, IntPtr.Zero), true))
                 {
                     yield return mediaTypes[0];
-                    mediaTypes = new AMMediaType[1];
+                    mediaTypes[0] = null;
                 }
             }
         }
 
         private IEnumerable<IBaseFilter> EnumFilters(IFilterGraph filterGraph)
         {
-            if (filterGraph != null && filterGraph.EnumFilters(out var enumFilters).IsSuccess())
+            if (filterGraph != null && ComResult.SUCCESS(filterGraph.EnumFilters(out var enumFilters)))
             {
-                var filters = new IBaseFilter[1];
-                while (enumFilters.Next(1, filters, IntPtr.Zero).IsSuccess(true))
+                var filters = new IBaseFilter[] { null };
+                while (ComResult.SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
                 {
                     yield return filters[0];
-                    filters = new IBaseFilter[1];
+                    filters[0] = null;
                 }
             }
         }
 
         private IEnumerable<IBaseFilter> EnumCachedFilters(IGraphConfig graphConfig)
         {
-            if (graphConfig != null && graphConfig.EnumCacheFilter(out var enumFilters).IsSuccess())
+            if (graphConfig != null && ComResult.SUCCESS(graphConfig.EnumCacheFilter(out var enumFilters)))
             {
-                var filters = new IBaseFilter[1];
-                while (enumFilters.Next(1, filters, IntPtr.Zero).IsSuccess(true))
+                var filters = new IBaseFilter[] { null };
+                while (ComResult.SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
                 {
                     yield return filters[0];
-                    filters = new IBaseFilter[1];
+                    filters[0] = null;
                 }
             }
-        }
-
-        private int EnumSourceFilters(string fileName, out FGFilterList filterList)
-        {
-            if (string.IsNullOrEmpty(fileName))
-            {
-                filterList = null;
-                return HResult.E_POINTER.AsInt();
-            }
-
-            var fn = fileName.TrimStart();
-            var protocol = fn.Substring(0, fn.IndexOf(':') + 1).TrimEnd(':').ToLowerInvariant();
-            var ext = Path.GetExtension(fileName).ToLowerInvariant();
-
-            FileInfo file = null;
-            if (protocol.Length <= 1 || protocol == "file")
-            {
-                file = new FileInfo(fn);
-
-                // In case of audio CDs with extra content, the audio tracks
-                // cannot be accessed directly so we have to try opening it.
-                if (!file.Exists && ext != ".cda")
-                {
-                    filterList = null;
-                    return HResult.E_FAIL.AsInt();
-                }
-            }
-
-            filterList = new FGFilterList();
-
-            if (file == null || !file.Exists)
-            {
-                // Internet protocol.
-                foreach (var filter in _SourceFilters)
-                {
-                    if (filter.Protocols.Contains(protocol))
-                    {
-                        filterList.Add(filter, 0);
-                    }
-                }
-            }
-            else
-            {
-                // Internal.
-                foreach (var filter in _SourceFilters)
-                {
-                    foreach (var bytes in filter.CheckBytes)
-                    {
-                        if (CheckBytes(file, bytes))
-                        {
-                            filterList.Add(filter, 1);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(ext))
-            {
-                // Internal / file extension
-
-                foreach (var filter in _SourceFilters)
-                {
-                    if (filter.Extensions.Contains(ext))
-                    {
-                        filterList.Add(filter, 2);
-                    }
-                }
-            }
-
-            // The rest.
-            foreach (var filter in _SourceFilters)
-            {
-                if (filter.Protocols.Count == 0 && filter.CheckBytes.Count == 0 && filter.Extensions.Count == 0)
-                {
-                    filterList.Add(filter, 3);
-                }
-            }
-
-            if (file == null || !file.Exists)
-            {
-                using (var reg = new RegistryKeyReference($"{protocol}\\Extensions", RegistryHive.ClassesRoot))
-                {
-                    if (Guid.TryParse(reg.GetString(ext), out Guid guid))
-                    {
-                        filterList.Add(LookupFilterRegistry(guid, _OverrideFilters), 4);
-                    }
-                }
-
-                using (var reg = new RegistryKeyReference($"{protocol}", RegistryHive.ClassesRoot))
-                {
-                    if (Guid.TryParse(reg.GetString("Source Filter"), out Guid guid))
-                    {
-                        filterList.Add(LookupFilterRegistry(guid, _OverrideFilters), 5);
-                    }
-                }
-            }
-            else
-            {
-                CRegKey key;
-                if (ERROR_SUCCESS == key.Open(HKEY_CLASSES_ROOT, _T("Media Type"), KEY_READ))
-                {
-                    FILETIME ft;
-                    len = _countof(buff);
-                    for (DWORD i = 0; ERROR_SUCCESS == key.EnumKey(i, buff, &len, &ft); i++, len = _countof(buff))
-                    {
-                        GUID majortype;
-                        if (FAILED(GUIDFromCString(buff, majortype)))
-                        {
-                            continue;
-                        }
-
-                        CRegKey majorkey;
-                        if (ERROR_SUCCESS == majorkey.Open(key, buff, KEY_READ))
-                        {
-                            len = _countof(buff);
-                            for (DWORD j = 0; ERROR_SUCCESS == majorkey.EnumKey(j, buff, &len, &ft); j++, len = _countof(buff))
-                            {
-                                GUID subtype;
-                                if (FAILED(GUIDFromCString(buff, subtype)))
-                                {
-                                    continue;
-                                }
-
-                                CRegKey subkey;
-                                if (ERROR_SUCCESS == subkey.Open(majorkey, buff, KEY_READ))
-                                {
-                                    len = _countof(buff);
-                                    if (ERROR_SUCCESS != subkey.QueryStringValue(_T("Source Filter"), buff, &len))
-                                    {
-                                        continue;
-                                    }
-
-                                    GUID clsid = GUIDFromCString(buff);
-                                    TCHAR buff2[256];
-                                    ULONG len2;
-
-                                    len = _countof(buff);
-                                    len2 = sizeof(buff2);
-                                    for (DWORD k = 0, type;
-                                            clsid != GUID_NULL && ERROR_SUCCESS == RegEnumValue(subkey, k, buff2, &len2, 0, &type, (BYTE*)buff, &len);
-                                            k++, len = _countof(buff), len2 = sizeof(buff2))
-                                    {
-                                        if (CheckBytes(hFile, CString(buff)))
-                                        {
-                                            CFGFilter* pFGF = LookupFilterRegistry(clsid, m_override);
-                                            pFGF->AddType(majortype, subtype);
-                                            fl.Insert(pFGF, 9);
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (!string.IsNullOrEmpty(ext))
-            {
-                CRegKey key;
-                if (ERROR_SUCCESS == key.Open(HKEY_CLASSES_ROOT, _T("Media Type\\Extensions\\") + CString(ext), KEY_READ))
-                {
-                    len = _countof(buff);
-                    ZeroMemory(buff, sizeof(buff));
-                    LONG ret = key.QueryStringValue(_T("Source Filter"), buff, &len); // QueryStringValue can return ERROR_INVALID_DATA on bogus strings (radlight mpc v1003, fixed in v1004)
-                    if (ERROR_SUCCESS == ret || ERROR_INVALID_DATA == ret && GUIDFromCString(buff) != GUID_NULL)
-                    {
-                        GUID clsid = GUIDFromCString(buff);
-                        GUID majortype = GUID_NULL;
-                        GUID subtype = GUID_NULL;
-
-                        len = _countof(buff);
-                        if (ERROR_SUCCESS == key.QueryStringValue(_T("Media Type"), buff, &len))
-                        {
-                            majortype = GUIDFromCString(buff);
-                        }
-
-                        len = _countof(buff);
-                        if (ERROR_SUCCESS == key.QueryStringValue(_T("Subtype"), buff, &len))
-                        {
-                            subtype = GUIDFromCString(buff);
-                        }
-
-                        CFGFilter* pFGF = LookupFilterRegistry(clsid, m_override);
-                        pFGF->AddType(majortype, subtype);
-                        fl.Insert(pFGF, 7);
-                    }
-                }
-            }
-
-            var arFilter = LookupFilterRegistry(CLSID.AsyncReader, _OverrideFilters);
-            arFilter.AddType(CLSID.MediaType_Stream, Guid.Empty);
-            filterList.Add(arFilter, 9);
-
-            return HResult.S_OK.AsInt();
-        }
-
-        private bool CheckBytes(FileInfo file, string checkBytes)
-        {
-            throw new NotImplementedException();
-        }
-
-        private FGFilterBase LookupFilterRegistry(Guid guid, IReadOnlyList<FGFilterBase> filters, Merit fallbackMerit = Merit.DoNotUse)
-        {
-            foreach (var filter in filters)
-            {
-                if (filter.GUID == guid)
-                {
-                    return new FGFilterRegistry(guid, merit: filter.Merit);
-                }
-            }
-
-            return new FGFilterRegistry(guid, merit: fallbackMerit);
         }
     }
 }

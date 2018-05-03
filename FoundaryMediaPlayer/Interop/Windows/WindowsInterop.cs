@@ -19,6 +19,11 @@ namespace FoundaryMediaPlayer.Interop.Windows
         public const string Ole32 = "ole32.dll";
         public const string Oleaut32 = "oleaut32.dll";
         public const string DirectX = "d3d9.dll";
+        [SuppressMessage("ReSharper", "InconsistentNaming")] 
+        public const string MSVCRT = "msvcrt.dll";
+
+        [DllImport(MSVCRT, CallingConvention=CallingConvention.Cdecl, EntryPoint = "memcmp")]
+        public static extern int MemoryCompare(byte[] b1, byte[] b2, long count);
 
         [DllImport(Ole32), PublicAPI]
         public static extern void CreateBindCtx(int reserved, out IBindCtx bc);

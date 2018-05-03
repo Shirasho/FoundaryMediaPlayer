@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
+using DirectShowLib;
 using FoundaryMediaPlayer.Engine;
 
 namespace FoundaryMediaPlayer.Interfaces
@@ -18,6 +19,6 @@ namespace FoundaryMediaPlayer.Interfaces
         uint GetCount();
 
         [MethodImpl(MethodImplOptions.PreserveSig)]
-        int GetDeadEnd([In] int iIndex, [In] IList<string> path, [In] IList<FMediaType> mts);
+        int GetDeadEnd([In] int iIndex, [In] IList<string> path, [In] IList<AMMediaType> mts);
     }
 }

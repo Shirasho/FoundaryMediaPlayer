@@ -118,11 +118,11 @@
     <Reference Include="FluentAssertions, Version=5.3.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.5.3.0\lib\net47\FluentAssertions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Core, Version=0.2.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Core.0.2.6\lib\net45\Foundary.Core.dll</HintPath>
+    <Reference Include="Foundary.Core, Version=0.2.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Core.0.2.11\lib\net45\Foundary.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Interfaces, Version=0.2.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Interfaces.0.2.6\lib\net45\Foundary.Interfaces.dll</HintPath>
+    <Reference Include="Foundary.Interfaces, Version=0.2.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Interfaces.0.2.11\lib\net45\Foundary.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.Wpf.DragDrop, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.1.1.0\lib\net46\GongSolutions.Wpf.DragDrop.dll</HintPath>
@@ -133,8 +133,8 @@
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
     </Reference>
-    <Reference Include="MahApps.Metro, Version=1.6.1.4, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.6.1\lib\net45\MahApps.Metro.dll</HintPath>
+    <Reference Include="MahApps.Metro, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MahApps.Metro.1.6.2\lib\net47\MahApps.Metro.dll</HintPath>
     </Reference>
     <Reference Include="MahApps.Metro.IconPacks, Version=2.2.0.12, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.IconPacks.2.2.0\lib\net46\MahApps.Metro.IconPacks.dll</HintPath>
@@ -295,6 +295,7 @@
     <Compile Include="Engine\MediaType.cs" />
     <Compile Include="Engine\Playlist.cs" />
     <Compile Include="Engine\PlaylistItem.cs" />
+    <Compile Include="Engine\StreamPath.cs" />
     <Compile Include="Engine\SubtitleInput.cs" />
     <Compile Include="Events\EventArgs\KeyBindingEventArgs.cs" />
     <Compile Include="Events\EventArgs\MediaFailedEventArg.cs" />
@@ -320,7 +321,6 @@
     <Compile Include="Events\WindowClosedEvent.cs" />
     <Compile Include="Events\WindowFocusEvent.cs" />
     <Compile Include="Events\WindowStateChangedEvent.cs" />
-    <Compile Include="Extensions\CancellationTokenSourceExtensions.cs" />
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
     <Compile Include="Interfaces\EDirectVobSubXyOptions.cs" />
     <Compile Include="Interfaces\EDirectXCreateFlags.cs" />
