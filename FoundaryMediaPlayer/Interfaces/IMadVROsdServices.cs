@@ -9,8 +9,7 @@ namespace FoundaryMediaPlayer.Interfaces
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public delegate void OSDMOUSECALLBACK(string name, IntPtr context, uint message, IntPtr wParam, int posX, int posY);
 
-    [ComImport]
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [Guid("3AE03A88-F613-4BBA-AD3E-EE236976BF9A")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IMadVROsdServices

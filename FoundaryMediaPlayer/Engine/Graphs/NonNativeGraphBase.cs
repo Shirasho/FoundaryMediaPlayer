@@ -5,6 +5,7 @@ using System.Runtime.InteropServices.ComTypes;
 using DirectShowLib;
 using FoundaryMediaPlayer.Interfaces;
 using FoundaryMediaPlayer.Interop.Windows;
+
 using User32 = PInvoke.User32;
 using HResult = PInvoke.HResult.Code;
 
@@ -15,7 +16,8 @@ namespace FoundaryMediaPlayer.Engine.Graphs
     /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public abstract class ANonNativeGraphBase
-        : IGraphBuilder2
+        : AComObjectBase
+        , IGraphBuilder2
         , IMediaControl
         , IMediaEventEx
         , IMediaSeeking
@@ -37,11 +39,6 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         private User32.WindowMessage _NotifyMsg { get; set; }
         private IntPtr _NotifyInstData { get; set; } = IntPtr.Zero;
         private Queue<GMSG> _MessageQueue { get; } = new Queue<GMSG>();
-
-        protected ANonNativeGraphBase()
-        {
-
-        }
 
         /// <inheritdoc />
         public void Dispose()
@@ -133,7 +130,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 lEventCode = EventCode.Complete;
                 lParam1 = IntPtr.Zero;
                 lParam2 = IntPtr.Zero;
-                return unchecked((int)HResult.E_FAIL);
+                return CastResult(HResult.E_FAIL);
             }
 
             var message = _MessageQueue.Dequeue();
@@ -141,7 +138,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             lParam1 = message.Param1;
             lParam2 = message.Param2;
 
-            return (int)HResult.S_OK;
+            return CastResult(HResult.S_OK);
         }
 
         public abstract int WaitForCompletion(int msTimeout, out EventCode pEvCode);
@@ -160,7 +157,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             //    }
             //}
 
-            return (int)HResult.S_OK;
+            return CastResult(HResult.S_OK);
         }
 
         /// <inheritdoc />
@@ -173,10 +170,10 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             if (!User32.IsWindow(_NotifyWndHandle))
             {
                 _NotifyWndHandle = IntPtr.Zero;
-                return unchecked((int)HResult.E_FAIL);
+                return CastResult(HResult.E_FAIL);
             }
 
-            return (int)HResult.S_OK;
+            return CastResult(HResult.S_OK);
         }
 
         /// <inheritdoc />
@@ -188,7 +185,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         public virtual int GetCapabilities(out AMSeekingSeekingCapabilities pCapabilities)
         {
             pCapabilities = AMSeekingSeekingCapabilities.CanSeekAbsolute | AMSeekingSeekingCapabilities.CanGetCurrentPos | AMSeekingSeekingCapabilities.CanGetDuration;
-            return (int)HResult.S_OK;
+            return CastResult(HResult.S_OK);
         }
 
         /// <inheritdoc />
@@ -196,19 +193,20 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             if (pCapabilities == AMSeekingSeekingCapabilities.None)
             {
-                return (int)HResult.S_OK;
+                return CastResult(HResult.S_OK);
             }
 
             GetCapabilities(out AMSeekingSeekingCapabilities capabilities);
             var capabilities2 = capabilities & pCapabilities;
-            return capabilities2 == AMSeekingSeekingCapabilities.None ? unchecked((int)HResult.E_FAIL) :
-                (capabilities2 == pCapabilities ? (int)HResult.S_OK : (int)HResult.S_FALSE);
+            return capabilities2 == AMSeekingSeekingCapabilities.None 
+                ? CastResult(HResult.E_FAIL) 
+                : CastResult(capabilities2 == pCapabilities ? HResult.S_OK : HResult.S_FALSE);
         }
 
         /// <inheritdoc />
         public int IsFormatSupported(Guid pFormat)
         {
-            return pFormat == IID.TIMEFORMAT_MediaTime ? (int)HResult.S_OK : (int)HResult.S_FALSE;
+            return CastResult(pFormat == IID.TIMEFORMAT_MediaTime ? HResult.S_OK : HResult.S_FALSE);
         }
 
         /// <inheritdoc />
@@ -221,7 +219,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         public int GetTimeFormat(out Guid pFormat)
         {
             pFormat = IID.TIMEFORMAT_MediaTime;
-            return (int)HResult.S_OK;
+            return CastResult(HResult.S_OK);
         }
 
         /// <inheritdoc />
@@ -233,7 +231,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         /// <inheritdoc />
         public int SetTimeFormat(Guid pFormat)
         {
-            return IsFormatSupported(pFormat) == (int)HResult.S_OK ? (int)HResult.S_OK : unchecked((int)HResult.E_INVALIDARG);
+            return CastResult(IsFormatSupported(pFormat) == (int)HResult.S_OK ? HResult.S_OK : HResult.E_INVALIDARG);
         }
 
         /// <inheritdoc />

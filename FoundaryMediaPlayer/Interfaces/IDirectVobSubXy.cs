@@ -7,110 +7,57 @@ using PInvoke;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [ComVisible(true)]
-    [ComImport]
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, ComVisible(true), SuppressUnmanagedCodeSecurity]
     [Guid("85E5D6F9-BEFB-4E01-B047-758359CDF9AB")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IDirectVobSubXy : IBaseFilter
     {
         [PreserveSig]
-        int XyGetBool(
-            EDirectVobSubXyBoolOptions field, 
-            out bool value
-        );
-        [PreserveSig]
-        int XyGetInt(
-            EDirectVobSubXyIntOptions field, 
-            out int value
-        );
+        int XyGetBool(EDirectVobSubXyBoolOptions field, out bool value);
 
         [PreserveSig]
-        int XyGetSize(
-            EDirectVobSubXySizeOptions field, 
-            out SIZE value
-        );
+        int XyGetInt(EDirectVobSubXyIntOptions field, out int value);
 
         [PreserveSig]
-        int XyGetRect(
-            int field, 
-            out RECT value
-        );
+        int XyGetSize(EDirectVobSubXySizeOptions field, out SIZE value);
 
         [PreserveSig]
-        int XyGetUlonglong(
-            int field, 
-            out long value
-        );
+        int XyGetRect(int field, out RECT value);
 
         [PreserveSig]
-        int XyGetDouble(
-            int field, 
-            out double value
-        );
+        int XyGetUlonglong(int field, out long value);
 
         [PreserveSig]
-        int XyGetString(
-            EDirectVobSubXyStringOptions field, 
-            out string value,
-            out int chars
-        );
+        int XyGetDouble(int field, out double value);
 
         [PreserveSig]
-        int XyGetBin(
-            EDirectVobSubXyBinOptions field, 
-            out IntPtr value,
-            out int size
-        );
+        int XyGetString(EDirectVobSubXyStringOptions field, out string value, out int chars);
 
         [PreserveSig]
-        int XySetBool(
-            EDirectVobSubXyBoolOptions field,
-            bool value
-        );
+        int XyGetBin(EDirectVobSubXyBinOptions field, out IntPtr value, out int size);
 
         [PreserveSig]
-        int XySetInt(
-            EDirectVobSubXyIntOptions field, 
-            int value
-        );
+        int XySetBool(EDirectVobSubXyBoolOptions field, bool value);
 
         [PreserveSig]
-        int XySetSize(
-            EDirectVobSubXySizeOptions field,
-            SIZE value
-        );
+        int XySetInt(EDirectVobSubXyIntOptions field, int value);
 
         [PreserveSig]
-        int XySetRect(
-            int field, 
-            RECT value
-        );
+        int XySetSize(EDirectVobSubXySizeOptions field, SIZE value);
 
         [PreserveSig]
-        int XySetUlonglong(
-            int field, 
-            long value
-        );
+        int XySetRect(int field, RECT value);
 
         [PreserveSig]
-        int XySetDouble(
-            int field, 
-            double value
-        );
+        int XySetUlonglong(int field, long value);
 
         [PreserveSig]
-        int XySetString(
-            EDirectVobSubXyStringOptions field, 
-            string value,
-            int chars
-        );
+        int XySetDouble(int field, double value);
 
         [PreserveSig]
-        int XySetBin(
-            EDirectVobSubXyBinOptions field, 
-            IntPtr value, 
-            int size
-        );
+        int XySetString(EDirectVobSubXyStringOptions field, string value, int chars);
+
+        [PreserveSig]
+        int XySetBin(EDirectVobSubXyBinOptions field, IntPtr value, int size);
     }
 }

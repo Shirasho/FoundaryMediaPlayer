@@ -1,30 +1,43 @@
-﻿#pragma warning disable 1591
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("C8334466-CD1E-4ad1-9D2D-8EE8519BD180")]
-    [ComImport]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface ISubPicQueue
     {
-        //STDMETHOD(SetSubPicProvider)(ISubPicProvider* pSubPicProvider /*[in]*/) PURE;
-        //STDMETHOD(GetSubPicProvider)(ISubPicProvider** pSubPicProvider /*[out]*/) PURE;
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int SetSubPicProvider([In] ISubPicProvider pSubPicProvider);
 
-        //STDMETHOD(SetFPS)(double fps /*[in]*/) PURE;
-        //STDMETHOD(SetTime)(REFERENCE_TIME rtNow /*[in]*/) PURE;
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int GetSubPicProvider([Out] out ISubPicProvider pSubPicProvider);
 
-        //STDMETHOD(Invalidate)(REFERENCE_TIME rtInvalidate = -1) PURE;
-        //STDMETHOD_(bool, LookupSubPic)(REFERENCE_TIME rtNow /*[in]*/, CComPtr<ISubPic>& pSubPic /*[out]*/) PURE;
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int SetFPS(double fps);
 
-        //STDMETHOD(GetStats)(int& nSubPics, REFERENCE_TIME & rtNow, REFERENCE_TIME & rtStart, REFERENCE_TIME& rtStop /*[out]*/) PURE;
-        //STDMETHOD(GetStats)(int nSubPic /*[in]*/, REFERENCE_TIME & rtStart, REFERENCE_TIME& rtStop /*[out]*/) PURE;
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int SetTime(long rtNow);
 
-        //STDMETHOD_(bool, LookupSubPic)(REFERENCE_TIME rtNow /*[in]*/, bool bAdviseBlocking, CComPtr<ISubPic>& pSubPic /*[out]*/) PURE;
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int Invalidate(long rtInvalidate = -1);
+
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        bool LookupSubPic(long rtNow, [Out] out ISubPic pSubPic);
+
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int GetStats(ref int nSubPics, ref long rtNow, ref long rtstart, ref long rtStop);
+
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        int GetStats(int nSubPic, ref long rtStart, ref long rtStop);
+
+        [MethodImpl(MethodImplOptions.PreserveSig)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        bool LookupSubPic(long rtNow, bool bAdviseBlocking, [In] ISubPic pSubPic);
     }
 }

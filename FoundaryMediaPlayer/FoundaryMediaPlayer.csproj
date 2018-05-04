@@ -327,6 +327,8 @@
     <Compile Include="Interfaces\EDirectVobSubXyOptions.cs" />
     <Compile Include="Interfaces\EDirectXCreateFlags.cs" />
     <Compile Include="Interfaces\IMFGetService.cs" />
+    <Compile Include="Interfaces\ISubPic.cs" />
+    <Compile Include="Interfaces\ISubPicProvider.cs" />
     <Compile Include="Interfaces\LAV\ELAVAudioCodec.cs" />
     <Compile Include="Interfaces\LAV\ELAVAudioMixingFlag.cs" />
     <Compile Include="Interfaces\LAV\ELAVAudioMixingLayout.cs" />
@@ -375,6 +377,8 @@
     <Compile Include="Interfaces\ISubPicAllocatorPresenter2.cs" />
     <Compile Include="Interfaces\ISubPicQueue.cs" />
     <Compile Include="Interfaces\ISubStream.cs" />
+    <Compile Include="Interop\Vector.cs" />
+    <Compile Include="Interop\Windows\ComObjectBase.cs" />
     <Compile Include="Interop\Windows\ComPointer.cs" />
     <Compile Include="Interop\Windows\D3DCAPS9.cs" />
     <Compile Include="Interop\Windows\D3DDEVICE_CREATION_PARAMETERS.cs" />
@@ -395,7 +399,6 @@
     <Compile Include="Interop\Windows\D3DVSHADERCAPS2_0.cs" />
     <Compile Include="Interop\Windows\UUID.CLSID.cs" />
     <Compile Include="Interop\Windows\UUID.IID.cs" />
-    <Compile Include="Interop\Windows\ComResult.cs" />
     <Compile Include="Interop\Windows\IUnknownCollection.cs" />
     <Compile Include="Interop\Windows\SIZE.cs" />
     <Compile Include="Interop\Windows\WindowsInterop.cs" />

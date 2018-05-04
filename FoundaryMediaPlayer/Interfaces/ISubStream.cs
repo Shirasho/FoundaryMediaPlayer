@@ -6,10 +6,9 @@ using DirectShowLib;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("DE11E2FB-02D3-45e4-A174-6B7CE2783BDB")]
-    [ComImport]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface ISubStream : IPersist
     {

@@ -5,10 +5,9 @@ using System.Security;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("2D0EBE73-BA82-4E90-859B-C7C48ED3650F")]
-    [ComImport]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IDSMChapterBag
     {

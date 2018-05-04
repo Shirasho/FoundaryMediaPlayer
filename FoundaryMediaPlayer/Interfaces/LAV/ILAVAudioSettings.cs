@@ -13,69 +13,46 @@ namespace FoundaryMediaPlayer.Interfaces
         int SetRuntimeConfig(bool bRuntimeConfig);
         
         [PreserveSig]
-        int GetDRC(
-            out bool pbDRCEnabled, 
-            out int piDRCLevel
-        );
-        [PreserveSig]
-        int SetDRC(
-            bool bDRCEnabled, 
-            int iDRCLevel
-        );
-        
-        [PreserveSig]
-        bool GetFormatConfiguration(
-            ELAVAudioCodec aCodec
-        );
+        int GetDRC(out bool pbDRCEnabled, out int piDRCLevel);
 
         [PreserveSig]
-        int SetFormatConfiguration(
-            ELAVAudioCodec aCodec, 
-            bool bEnabled
-        );
+        int SetDRC(bool bDRCEnabled, int iDRCLevel);
         
         [PreserveSig]
-        bool GetBitstreamConfig(
-            ELAVBitstreamCodec bsCodec
-        );
+        bool GetFormatConfiguration(ELAVAudioCodec aCodec);
 
         [PreserveSig]
-        int SetBitstreamConfig(
-            ELAVBitstreamCodec bsCodec, 
-            bool bEnabled
-        );
+        int SetFormatConfiguration(ELAVAudioCodec aCodec, bool bEnabled);
+        
+        [PreserveSig]
+        bool GetBitstreamConfig(ELAVBitstreamCodec bsCodec);
+
+        [PreserveSig]
+        int SetBitstreamConfig(ELAVBitstreamCodec bsCodec, bool bEnabled);
         
         [PreserveSig]
         bool GetDTSHDFraming();
 
         [PreserveSig]
-        int SetDTSHDFraming(
-            bool bHDFraming
-        );
+        int SetDTSHDFraming(bool bHDFraming);
         
         [PreserveSig]
         bool GetAutoAVSync();
 
         [PreserveSig]
-        int SetAutoAVSync(
-            bool bAutoSync
-        );
+        int SetAutoAVSync(bool bAutoSync);
         
         [PreserveSig]
         bool GetOutputStandardLayout();
 
         [PreserveSig]
-        int SetOutputStandardLayout(
-            bool bStdLayout
-        );
+        int SetOutputStandardLayout(bool bStdLayout);
         
         [PreserveSig]
         bool GetExpandMono();
 
         [PreserveSig]
-        int SetExpandMono(
-            bool bExpandMono
-        );
+        int SetExpandMono(bool bExpandMono);
         
         [PreserveSig]
         bool GetExpand61();
@@ -87,91 +64,58 @@ namespace FoundaryMediaPlayer.Interfaces
         bool GetAllowRawSPDIFInput();
 
         [PreserveSig]
-        int SetAllowRawSPDIFInput(
-            bool bAllow
-        );
+        int SetAllowRawSPDIFInput(bool bAllow);
         
         [PreserveSig]
-        bool GetSampleFormat(
-            ELAVAudioSampleFormat format
-        );
+        bool GetSampleFormat(ELAVAudioSampleFormat format);
 
         [PreserveSig]
-        int SetSampleFormat(
-            ELAVAudioSampleFormat format, 
-            bool bEnabled
-        );
+        int SetSampleFormat(ELAVAudioSampleFormat format, bool bEnabled);
         
         [PreserveSig]
-        int GetAudioDelay(
-            out bool pbEnabled, 
-            out int pDelay
-        );
+        int GetAudioDelay(out bool pbEnabled, out int pDelay);
 
         [PreserveSig]
-        int SetAudioDelay(
-            bool bEnabled, 
-            int delay
-        );
+        int SetAudioDelay(bool bEnabled, int delay);
         
         [PreserveSig]
-        int SetMixingEnabled(
-            bool bEnabled
-        );
+        int SetMixingEnabled(bool bEnabled);
 
         [PreserveSig]
         bool GetMixingEnabled();
         
         [PreserveSig]
-        int SetMixingLayout(
-            ELAVAudioMixingLayout dwLayout
-        );
+        int SetMixingLayout(ELAVAudioMixingLayout dwLayout);
 
         [PreserveSig]
         ELAVAudioMixingLayout GetMixingLayout();
 
         [PreserveSig]
-        int SetMixingFlags(
-            ELAVAudioMixingFlag dwFlags
-        );
+        int SetMixingFlags(ELAVAudioMixingFlag dwFlags);
 
         [PreserveSig]
         ELAVAudioMixingFlag GetMixingFlags();
         
         [PreserveSig]
-        int SetMixingMode(
-            ELAVAudioMixingMode mixingMode
-        );
+        int SetMixingMode(ELAVAudioMixingMode mixingMode);
 
         [PreserveSig]
         ELAVAudioMixingMode GetMixingMode();
         
         [PreserveSig]
-        int SetMixingLevels(
-            int dwCenterLevel, 
-            int dwSurroundLevel, 
-            int dwLFELevel
-        );
+        int SetMixingLevels(int dwCenterLevel, int dwSurroundLevel, int dwLFELevel);
 
         [PreserveSig]
-        int GetMixingLevels(
-            out int dwCenterLevel, 
-            out int dwSurroundLevel, 
-            out int dwLFELevel
-        );
+        int GetMixingLevels(out int dwCenterLevel, out int dwSurroundLevel, out int dwLFELevel);
         
         [PreserveSig]
-        int SetTrayIcon(
-            bool bEnabled
-        );
+        int SetTrayIcon(bool bEnabled);
 
         [PreserveSig]
         bool GetTrayIcon();
 
         [PreserveSig]
-        int SetSampleConvertDithering(
-            bool bEnabled
-        );
+        int SetSampleConvertDithering(bool bEnabled);
 
         [PreserveSig]
         bool GetSampleConvertDithering();

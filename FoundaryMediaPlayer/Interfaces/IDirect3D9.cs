@@ -6,16 +6,14 @@ using FoundaryMediaPlayer.Interop.Windows;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [ComImport]
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [Guid("81BDCBCA-64D4-426d-AE8D-AD0147F4275C")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [SuppressUnmanagedCodeSecurity]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IDirect3D9
     {
         [PreserveSig, SuppressUnmanagedCodeSecurity]
-        int RegisterSoftwareDevice([In, Out]IntPtr pInitializeFunction);
+        int RegisterSoftwareDevice([In, Out] IntPtr pInitializeFunction);
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
         int GetAdapterCount();
@@ -56,12 +54,7 @@ namespace FoundaryMediaPlayer.Interfaces
         IntPtr GetAdapterMonitor(uint Adapter);
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
-        int CreateDevice(int Adapter,
-            D3DDEVTYPE DeviceType,
-            IntPtr hFocusWindow,
-            EDirectXCreateFlags BehaviorFlags,
-            [In, Out]
-            ref D3DPRESENT_PARAMETERS pPresentationParameters,
-            [Out]out IntPtr ppReturnedDeviceInterface);
+        int CreateDevice(int Adapter, D3DDEVTYPE DeviceType, IntPtr hFocusWindow, EDirectXCreateFlags BehaviorFlags, 
+                        [In, Out] ref D3DPRESENT_PARAMETERS pPresentationParameters, [Out]out IntPtr ppReturnedDeviceInterface);
     }
 }

@@ -3,8 +3,7 @@ using System.Security;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [ComImport]
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [Guid("D6EE8031-214E-4E9E-A3A7-458925F933AB")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IMadVRExclusiveModeInfo
@@ -14,8 +13,6 @@ namespace FoundaryMediaPlayer.Interfaces
         int IsExclusiveModeActive();
 
         [PreserveSig]
-        void IsMadVRSeekbarEnabled(
-            [Out, MarshalAs(UnmanagedType.I1)] out bool status
-        );
+        void IsMadVRSeekbarEnabled([Out, MarshalAs(UnmanagedType.I1)] out bool status);
     };
 }

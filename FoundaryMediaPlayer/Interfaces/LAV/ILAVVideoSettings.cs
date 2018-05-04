@@ -10,196 +10,139 @@ namespace FoundaryMediaPlayer.Interfaces
     public interface ILAVVideoSettings
     {
         [PreserveSig]
-        int SetRuntimeConfig(
-            bool bRuntimeConfig
-        );
+        int SetRuntimeConfig(bool bRuntimeConfig);
         
         [PreserveSig]
-        bool GetFormatConfiguration(
-            ELAVVideoCodec vCodec
-        );
+        bool GetFormatConfiguration(ELAVVideoCodec vCodec);
 
         [PreserveSig]
-        int SetFormatConfiguration(
-            ELAVVideoCodec vCodec, 
-            bool bEnabled
-        );
+        int SetFormatConfiguration(ELAVVideoCodec vCodec, bool bEnabled);
         
         [PreserveSig]
-        int SetNumThreads(
-            uint dwNum
-        );
+        int SetNumThreads(uint dwNum);
         
         [PreserveSig]
         int GetNumThreads();
         
         [PreserveSig]
-        int SetStreamAR(
-            bool bStreamAR
-        );
+        int SetStreamAR(bool bStreamAR);
         
         [PreserveSig]
         bool GetStreamAR();
         
         [PreserveSig]
-        bool GetPixelFormat(
-            ELAVOutputPixelFormat pixFmt
-        );
+        bool GetPixelFormat(ELAVOutputPixelFormat pixFmt);
 
         [PreserveSig]
-        int SetPixelFormat(
-            ELAVOutputPixelFormat pixFmt, 
-            bool bEnabled
-        );
+        int SetPixelFormat(ELAVOutputPixelFormat pixFmt, bool bEnabled);
         
         [PreserveSig]
-        int SetRGBOutputRange(
-            uint dwRange
-        );
+        int SetRGBOutputRange(uint dwRange);
         
         [PreserveSig]
         int GetRGBOutputRange();
         
         [PreserveSig]
-        int SetDeintFieldOrder(
-            ELAVDeinterlaceFieldOrder fieldOrder
-        );
+        int SetDeintFieldOrder(ELAVDeinterlaceFieldOrder fieldOrder);
         
         [PreserveSig]
         ELAVDeinterlaceFieldOrder GetDeintFieldOrder();
         
         [PreserveSig]
-        int SetDeintAggressive(
-            bool bAggressive
-        );
+        int SetDeintAggressive(bool bAggressive);
         
         [PreserveSig]
         bool GetDeintAggressive();
         
         [PreserveSig]
-        int SetDeintForce(
-            bool bForce
-        );
+        int SetDeintForce(bool bForce);
         
         [PreserveSig]
         bool GetDeintForce();
         
         [PreserveSig]
-        int CheckHWAccelSupport(
-            ELAVHardwareAcceleration hwAccel
-        );
+        int CheckHWAccelSupport(ELAVHardwareAcceleration hwAccel);
         
         [PreserveSig]
-        int SetHWAccel(
-            ELAVHardwareAcceleration hwAccel
-        );
+        int SetHWAccel(ELAVHardwareAcceleration hwAccel);
         
         [PreserveSig]
         ELAVHardwareAcceleration GetHWAccel();
         
         [PreserveSig]
-        int SetHWAccelCodec(
-            ELAVVideoHardwareCodec hwAccelCodec, 
-            bool bEnabled
-        );
+        int SetHWAccelCodec(ELAVVideoHardwareCodec hwAccelCodec, bool bEnabled);
         
         [PreserveSig]
-        bool GetHWAccelCodec(
-            ELAVVideoHardwareCodec hwAccelCodec
-        );
+        bool GetHWAccelCodec(ELAVVideoHardwareCodec hwAccelCodec);
         
         [PreserveSig]
-        int SetHWAccelDeintMode(
-            ELAVDeinterlaceMode deintMode
-        );
+        int SetHWAccelDeintMode(ELAVDeinterlaceMode deintMode);
         
         [PreserveSig]
         ELAVDeinterlaceMode GetHWAccelDeintMode();
         
         [PreserveSig]
-        int SetHWAccelDeintOutput(
-            ELAVDeinterlaceOutput deintOutput
-        );
+        int SetHWAccelDeintOutput(ELAVDeinterlaceOutput deintOutput);
         
         [PreserveSig]
         ELAVDeinterlaceOutput GetHWAccelDeintOutput();
         
         [PreserveSig]
-        int SetHWAccelDeintHQ(
-            bool bHQ
-        );
+        int SetHWAccelDeintHQ(bool bHQ);
         
         [PreserveSig]
         bool GetHWAccelDeintHQ();
         
         [PreserveSig]
-        int SetSWDeintMode(
-            ELAVSoftwareDeinterlaceMode deintMode
-        );
+        int SetSWDeintMode(ELAVSoftwareDeinterlaceMode deintMode);
         
         [PreserveSig]
         ELAVSoftwareDeinterlaceMode GetSWDeintMode();
         
         [PreserveSig]
-        int SetSWDeintOutput(
-            ELAVDeinterlaceOutput deintOutput
-        );
+        int SetSWDeintOutput(ELAVDeinterlaceOutput deintOutput);
         
         [PreserveSig]
         ELAVDeinterlaceOutput GetSWDeintOutput();
         
         [PreserveSig]
-        int SetDeintTreatAsProgressive(
-            bool bEnabled
-        );
+        int SetDeintTreatAsProgressive(bool bEnabled);
         
         [PreserveSig]
         bool GetDeintTreatAsProgressive();
         
         [PreserveSig]
-        bool SetDitherMode(
-            ELAVDitherMode ditherMode
-        );
+        bool SetDitherMode(ELAVDitherMode ditherMode);
         
         [PreserveSig]
         ELAVDitherMode GetDitherMode();
         
         [PreserveSig]
-        bool SetUseMSWMV9Decoder(
-            bool bEnabled
-        );
+        bool SetUseMSWMV9Decoder(bool bEnabled);
         
         [PreserveSig]
         bool GetUseMSWMV9Decoder();
         
         [PreserveSig]
-        int SetDVDVideoSupport(
-            bool bEnabled
-        );
+        int SetDVDVideoSupport(bool bEnabled);
         
         [PreserveSig]
         bool GetDVDVideoSupport();
         
         [PreserveSig]
-        int SetHWAccelResolutionFlags(
-            int dwResFlags
-        );
+        int SetHWAccelResolutionFlags(int dwResFlags);
         
         [PreserveSig]
         int GetHWAccelResolutionFlags();
         
         [PreserveSig]
-        int SetTrayIcon(
-            bool bEnabled
-        );
+        int SetTrayIcon(bool bEnabled);
         
         [PreserveSig]
         bool GetTrayIcon();
         
         [PreserveSig]
-        int SetDeinterlacingMode(
-            ELAVDeinterlaceMode deintMode
-        );
+        int SetDeinterlacingMode(ELAVDeinterlaceMode deintMode);
         
         [PreserveSig]
         ELAVDeinterlaceMode GetDeinterlacingMode();

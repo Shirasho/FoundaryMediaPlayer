@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using DirectShowLib;
 using Foundary.Extensions;
+using FoundaryMediaPlayer.Interop.Windows;
 
 namespace FoundaryMediaPlayer.Engine
 {
@@ -11,7 +12,7 @@ namespace FoundaryMediaPlayer.Engine
     /// The base class for all filters.
     /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public abstract class AFilterBase : IEquatable<AFilterBase>
+    public abstract class AFilterBase : AComObjectBase, IEquatable<AFilterBase>
     {
         public Guid GUID { get; protected set; }
         public string Name { get; protected set; }

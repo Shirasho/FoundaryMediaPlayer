@@ -61,7 +61,7 @@ namespace FoundaryMediaPlayer.Engine
         /// <inheritdoc />
         public override int Create(out IBaseFilter baseFilter, out IList<object> unknowns)
         {
-            ComResult comResult = HResult.E_FAIL;
+            HResult comResult = HResult.E_FAIL;
             unknowns = new List<object>();
 
             if (Moniker != null)
@@ -96,7 +96,7 @@ namespace FoundaryMediaPlayer.Engine
                 baseFilter = null;
             }
 
-            return comResult;
+            return CastResult(comResult);
         }
 
         private void QueryProperties()
@@ -105,18 +105,18 @@ namespace FoundaryMediaPlayer.Engine
             Moniker.BindToStorage(null, null, ref pbclsid, out object propertyBagRaw);
             if (propertyBagRaw is IPropertyBag propertyBag)
             {
-                if (ComResult.SUCCESS(propertyBag.Read("FriendlyName", out object fname, null)))
+                if (SUCCESS(propertyBag.Read("FriendlyName", out object fname, null)))
                 {
                     Name = fname as string ?? Name;
                 }
 
-                if (ComResult.SUCCESS(propertyBag.Read("CLSID", out object clsid, null)) && 
+                if (SUCCESS(propertyBag.Read("CLSID", out object clsid, null)) && 
                     clsid is string s && Guid.TryParse(s, out Guid guid))
                 {
                     GUID = guid;
                 }
 
-                if (ComResult.SUCCESS(propertyBag.Read("FilterData", out object filterData, null)))
+                if (SUCCESS(propertyBag.Read("FilterData", out object filterData, null)))
                 {
                     ExtractFilterData(filterData as byte[]);
                 }
@@ -129,6 +129,7 @@ namespace FoundaryMediaPlayer.Engine
             //if (filterData.ParseFilterData(data))
             {
                 //TODO: FGFilter 284
+                throw new NotImplementedException();
             }
         }
     }

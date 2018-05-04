@@ -9,26 +9,14 @@ namespace FoundaryMediaPlayer.Interfaces
     public interface ILAVAudioStatus
     {
         [PreserveSig]
-        bool IsSampleFormatSupported(
-            ELAVAudioSampleFormat sfCheck
-        );
+        bool IsSampleFormatSupported(ELAVAudioSampleFormat sfCheck);
 
         [PreserveSig]
-        int GetDecodeDetails(
-            IntPtr pCodec,
-            IntPtr pDecodeFormat,
-            out int pnChannels,
-            out int pSampleRate,
-            out uint pChannelMask
-        );
+        int GetDecodeDetails(IntPtr pCodec, IntPtr pDecodeFormat, out int pnChannels, out int pSampleRate,
+                             out uint pChannelMask);
 
         [PreserveSig]
-        int GetOutputDetails(
-            IntPtr pOutputFormat,
-            out int pnChannels,
-            out int pSampleRate,
-            out uint pChannelMask
-        );
+        int GetOutputDetails(IntPtr pOutputFormat, out int pnChannels, out int pSampleRate, out uint pChannelMask);
 
         [PreserveSig]
         int EnableVolumeStats();
@@ -37,9 +25,6 @@ namespace FoundaryMediaPlayer.Interfaces
         int DisableVolumeStats();
 
         [PreserveSig]
-        int GetChannelVolumeAverage(
-            ushort nChannel,
-            out float pfDb
-        );
+        int GetChannelVolumeAverage(ushort nChannel, out float pfDb);
     }
 }

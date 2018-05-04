@@ -1,87 +1,44 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using JetBrains.Annotations;
 
 using HResult = PInvoke.HResult.Code;
 
 namespace FoundaryMediaPlayer.Interop.Windows
 {
-    /// <summary>
-    /// A utility class to help determine the success status of methods that return HRESULTs
-    /// in a way similar to C++.
-    /// </summary>
-    /// <example>
-    /// int hresult;
-    /// if (ComResult.FAILED(hresult = NativeComMethod(object pUnk, out IGraphFilter2 graphFilter)))
-    /// {
-    ///    return hresult;
-    /// }
-    ///
-    /// // OR
-    /// if (ComResult.FAILED(() => NativeComMethod(object pUnk, out IGraphFilter2 graphFilter), out hresult))
-    /// {
-    ///    return hresult;
-    /// }
-    ///
-    /// // C++
-    /// if (FAILED(hresult = NativeComMethod(const IUnknown* pUnk, IGraphFilter2** graphGilter)))
-    /// {
-    ///    return hresult;
-    /// }
-    ///
-    /// </example>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public class ComResult
+    public abstract class AComObjectBase
     {
-        private int _Value { get; }
-
-        /// <summary>
-        /// A result using <see cref="HResult"/>.
-        /// </summary>
-        /// <param name="code"></param>
-        public ComResult(HResult code)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Release(object obj)
         {
-            _Value = unchecked((int) code);
+            WindowsInterop.SafeRelease(obj);
         }
 
-        /// <summary>
-        /// A result using <see cref="int"/>.
-        /// </summary>
-        /// <param name="code"></param>
-        public ComResult(int code)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ThrowException(int result)
         {
-            _Value = code;
+            Marshal.ThrowExceptionForHR(result);
         }
 
-        /// <summary>
-        /// A result using <see cref="int"/> where the specified
-        /// <see cref="long"/> will be unchecked cast into an <see cref="int"/>.
-        /// </summary>
-        /// <param name="code"></param>
-        public ComResult(long code)
-            : this(unchecked((int) code))
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ThrowException(HResult result)
         {
-
+            ThrowException(unchecked((int) result));
         }
 
-        public static implicit operator int(ComResult comResult)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CastResult(HResult result)
         {
-            return comResult._Value;
+            return unchecked((int) result);
         }
 
-        public static implicit operator HResult(ComResult value)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int CastResult(long result)
         {
-            return (HResult) value._Value;
-        }
-
-        public static implicit operator ComResult(int code)
-        {
-            return new ComResult(code);
-        }
-
-        public static implicit operator ComResult(HResult code)
-        {
-            return new ComResult(code);
+            return unchecked((int) result);
         }
 
         /// <summary>

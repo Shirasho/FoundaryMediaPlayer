@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using Foundary.Extensions;
-using FoundaryMediaPlayer.Interop.Windows;
 
 namespace FoundaryMediaPlayer.Engine
 {
@@ -120,7 +119,7 @@ namespace FoundaryMediaPlayer.Engine
 
                 // Reject duplicate moniker.
                 if (internalFilter.Filter is FFilterRegistry filterRegistry2 &&
-                    ComResult.SUCCESS(filterRegistry?.Moniker?.IsEqual(filterRegistry2.Moniker)))
+                    filterRegistry?.Moniker?.IsEqual(filterRegistry2.Moniker) >= 0)
                 {
                     bInsert = false;
                     break;

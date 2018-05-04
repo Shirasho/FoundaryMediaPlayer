@@ -1,18 +1,16 @@
-﻿#pragma warning disable 1591
-
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("CF75B1F0-535C-4074-8869-B15F177F944E")]
-    [ComImport]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface ISubPicAllocatorPresenter
     {
+        //TODO: Implement
         //STDMETHOD(CreateRenderer)(IUnknown** ppRenderer) PURE;
 
         //STDMETHOD_(SIZE, GetVideoSize)(bool bCorrectAR = true) const PURE;

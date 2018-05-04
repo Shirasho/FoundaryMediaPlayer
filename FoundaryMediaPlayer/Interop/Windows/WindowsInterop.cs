@@ -132,9 +132,26 @@ namespace FoundaryMediaPlayer.Interop.Windows
         /// <param name="comObject"></param>
         /// <returns>The reference counter on the object.</returns>
         [PublicAPI]
+        [SuppressMessage("ReSharper", "LocalizableElement")]
         public static int SafeRelease(object comObject)
         {
-            return comObject != null && Marshal.IsComObject(comObject) ? Marshal.ReleaseComObject(comObject) : 0;
+            if (comObject == null)
+            {
+                return 0;
+            }
+
+            if (Marshal.IsComObject(comObject))
+            {
+                return Marshal.ReleaseComObject(comObject);
+            }
+
+            if (comObject is IDisposable disposable)
+            {
+                disposable.Dispose();
+                return 0;
+            }
+
+            throw new ArgumentException($"{nameof(comObject)} is not a COM object or an {nameof(IDisposable)}.", nameof(comObject));
         }
 
         [PublicAPI]
@@ -146,26 +163,23 @@ namespace FoundaryMediaPlayer.Interop.Windows
 
         [PublicAPI]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public static int AddToROT(object pUnkObj, string item, out ComResult comResult, ERunningObjectTableFlags flags = ERunningObjectTableFlags.RegistrationKeepAlive)
+        public static int AddToROT(object pUnkObj, string item, out int result, ERunningObjectTableFlags flags = ERunningObjectTableFlags.RegistrationKeepAlive)
         {
-            int result;
-            if (ComResult.SUCCESS(result = GetRunningObjectTable(0, out IRunningObjectTable rot)) &&
-                ComResult.SUCCESS(result = CreateItemMoniker("!", item, out IMoniker moniker)))
+            if ((result = GetRunningObjectTable(0, out IRunningObjectTable rot)) >= 0 &&
+                (result = CreateItemMoniker("!", item, out IMoniker moniker)) >= 0)
             {
-                comResult = result;
                 return rot.Register((int) flags, pUnkObj, moniker);
             }
 
-            comResult = result;
             return 0;
         }
         
         [PublicAPI]
         [SuppressMessage("ReSharper", "InconsistentNaming")]
-        public static ComResult RemoveFromROT(int register)
+        public static int RemoveFromROT(int register)
         {
             int result;
-            if (ComResult.SUCCESS(result = GetRunningObjectTable(0, out IRunningObjectTable rot)))
+            if ((result = GetRunningObjectTable(0, out IRunningObjectTable rot)) >= 0)
             {
                 rot.Revoke(register);
             }
@@ -177,9 +191,9 @@ namespace FoundaryMediaPlayer.Interop.Windows
         [SuppressMessage("ReSharper", "InconsistentNaming")]
         [DebuggerStepThrough]
         [DebuggerHidden]
-        public static void RemoveFromROT(int register, out ComResult comResult)
+        public static void RemoveFromROT(int register, out int result)
         {
-            comResult = RemoveFromROT(register);
+            result = RemoveFromROT(register);
         }
 
         [PublicAPI]

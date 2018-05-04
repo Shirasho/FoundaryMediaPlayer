@@ -6,16 +6,14 @@ using FoundaryMediaPlayer.Interop.Windows;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [ComImport]
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [Guid("02177241-69FC-400C-8FF1-93A44DF6861D")]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    [SuppressUnmanagedCodeSecurity]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IDirect3D9Ex : IDirect3D9
     {
         [PreserveSig, SuppressUnmanagedCodeSecurity]
-        new int RegisterSoftwareDevice([In, Out]IntPtr pInitializeFunction);
+        new int RegisterSoftwareDevice([In, Out] IntPtr pInitializeFunction);
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
         new int GetAdapterCount();
@@ -56,13 +54,8 @@ namespace FoundaryMediaPlayer.Interfaces
         new IntPtr GetAdapterMonitor(uint Adapter);
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
-        new int CreateDevice(int Adapter,
-                          D3DDEVTYPE DeviceType,
-                          IntPtr hFocusWindow,
-                          EDirectXCreateFlags BehaviorFlags,
-                          [In, Out]
-                          ref D3DPRESENT_PARAMETERS pPresentationParameters,
-                          [Out]out IntPtr ppReturnedDeviceInterface);
+        new int CreateDevice(int Adapter, D3DDEVTYPE DeviceType, IntPtr hFocusWindow, EDirectXCreateFlags BehaviorFlags,
+                             [In, Out] ref D3DPRESENT_PARAMETERS pPresentationParameters, [Out]out IntPtr ppReturnedDeviceInterface);
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
         uint GetAdapterModeCountEx();
@@ -74,15 +67,9 @@ namespace FoundaryMediaPlayer.Interfaces
         int GetAdapterDisplayModeEx();
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
-        int CreateDeviceEx(int Adapter,
-                          D3DDEVTYPE DeviceType,
-                          IntPtr hFocusWindow,
-                          EDirectXCreateFlags BehaviorFlags,
-                          [In, Out]
-                          ref D3DPRESENT_PARAMETERS pPresentationParameters,
-                          [In, Out]
-                          IntPtr pFullscreenDisplayMode,
-                          [Out]out IntPtr ppReturnedDeviceInterface);
+        int CreateDeviceEx(int Adapter, D3DDEVTYPE DeviceType, IntPtr hFocusWindow, EDirectXCreateFlags BehaviorFlags,
+                          [In, Out] ref D3DPRESENT_PARAMETERS pPresentationParameters, [In, Out] IntPtr pFullscreenDisplayMode,
+                          [Out] out IntPtr ppReturnedDeviceInterface);
 
         [PreserveSig, SuppressUnmanagedCodeSecurity]
         int GetAdapterLUID();

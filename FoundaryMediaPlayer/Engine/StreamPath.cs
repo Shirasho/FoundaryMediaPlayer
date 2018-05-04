@@ -38,8 +38,8 @@ namespace FoundaryMediaPlayer.Engine
             Add(new FStreamPath
             {
                 CLSID = WindowsInterop.GetCLSID(filter),
-                Filter = GraphUtilities.GetFilterName(filter),
-                Pin = GraphUtilities.GetPinName(pin)
+                Filter = GGraphUtilities.GetFilterName(filter),
+                Pin = GGraphUtilities.GetPinName(pin)
             });
         }
     }

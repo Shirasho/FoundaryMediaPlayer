@@ -8,8 +8,10 @@ using FoundaryMediaPlayer.Interop.Windows;
 
 namespace FoundaryMediaPlayer.Engine
 {
-    public static class GraphUtilities
+    public class GGraphUtilities : AComObjectBase
     {
+        private GGraphUtilities() {}
+
         public static IBaseFilter GetFilterFromPin(IPin pPin)
         {
             if (pPin == null)
@@ -92,7 +94,7 @@ namespace FoundaryMediaPlayer.Engine
             {
                 foreach (var pin in EnumPins(baseFilter))
                 {
-                    if (ComResult.SUCCESS(pin.QueryDirection(out PinDirection dir)) && direction == dir)
+                    if (SUCCESS(pin.QueryDirection(out PinDirection dir)) && direction == dir)
                     {
                         return pin;
                     }
@@ -104,10 +106,10 @@ namespace FoundaryMediaPlayer.Engine
 
         public static IEnumerable<AMMediaType> EnumMediaTypes(IPin pin)
         {
-            if (pin != null && ComResult.SUCCESS(pin.EnumMediaTypes(out IEnumMediaTypes enumMediaTypes)))
+            if (pin != null && SUCCESS(pin.EnumMediaTypes(out IEnumMediaTypes enumMediaTypes)))
             {
                 var mediaTypes = new AMMediaType[] { null };
-                while (ComResult.SUCCESS(enumMediaTypes.Next(1, mediaTypes, IntPtr.Zero), true))
+                while (SUCCESS(enumMediaTypes.Next(1, mediaTypes, IntPtr.Zero), true))
                 {
                     yield return mediaTypes[0];
                     mediaTypes[0] = null;
@@ -117,10 +119,10 @@ namespace FoundaryMediaPlayer.Engine
 
         public static IEnumerable<IBaseFilter> EnumFilters(IFilterGraph filterGraph)
         {
-            if (filterGraph != null && ComResult.SUCCESS(filterGraph.EnumFilters(out var enumFilters)))
+            if (filterGraph != null && SUCCESS(filterGraph.EnumFilters(out var enumFilters)))
             {
                 var filters = new IBaseFilter[] { null };
-                while (ComResult.SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
+                while (SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
                 {
                     yield return filters[0];
                     filters[0] = null;
@@ -130,10 +132,10 @@ namespace FoundaryMediaPlayer.Engine
 
         public static IEnumerable<IBaseFilter> EnumCachedFilters(IGraphConfig graphConfig)
         {
-            if (graphConfig != null && ComResult.SUCCESS(graphConfig.EnumCacheFilter(out var enumFilters)))
+            if (graphConfig != null && SUCCESS(graphConfig.EnumCacheFilter(out var enumFilters)))
             {
                 var filters = new IBaseFilter[] { null };
-                while (ComResult.SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
+                while (SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
                 {
                     yield return filters[0];
                     filters[0] = null;
@@ -143,7 +145,7 @@ namespace FoundaryMediaPlayer.Engine
 
         public static string GetPinName(IPin pin)
         {
-            if (pin != null && ComResult.SUCCESS(pin.QueryPinInfo(out PinInfo pinInfo)))
+            if (pin != null && SUCCESS(pin.QueryPinInfo(out PinInfo pinInfo)))
             {
                 return pinInfo.name.Trim();
             }
@@ -153,7 +155,7 @@ namespace FoundaryMediaPlayer.Engine
 
         public static string GetFilterName(IBaseFilter filter)
         {
-            if (filter != null && ComResult.SUCCESS(filter.QueryFilterInfo(out FilterInfo filterInfo)))
+            if (filter != null && SUCCESS(filter.QueryFilterInfo(out FilterInfo filterInfo)))
             {
                 return filterInfo.achName.Trim();
             }

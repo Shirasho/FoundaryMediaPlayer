@@ -1,6 +1,4 @@
-﻿#pragma warning disable 1591
-
-using System;
+﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -9,10 +7,9 @@ using DirectShowLib;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("165BE9D6-0929-4363-9BA3-580D735AA0F6")]
-    [ComImport]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IGraphBuilder2 : IFilterGraph2
     {

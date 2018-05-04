@@ -4,14 +4,12 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using DirectShowLib;
-using FoundaryMediaPlayer.Engine;
 
 namespace FoundaryMediaPlayer.Interfaces
 {
-    [SuppressUnmanagedCodeSecurity]
+    [ComImport, SuppressUnmanagedCodeSecurity]
     [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     [Guid("43CDA93D-6A4E-4A07-BD3E-49D161073EE7")]
-    [ComImport]
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public interface IGraphBuilderDeadEnd
     {
