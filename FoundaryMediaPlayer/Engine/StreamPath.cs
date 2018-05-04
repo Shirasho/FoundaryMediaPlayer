@@ -11,9 +11,24 @@ namespace FoundaryMediaPlayer.Engine
         public Guid CLSID { get; set; }
         public string Filter { get; set; }
         public string Pin { get; set; }
+
+        public bool Compare(FStreamPath other)
+        {
+            if (Filter != other.Filter)
+            {
+                return true;
+            }
+
+            if (Pin != other.Pin)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 
-    public class FStreamPathCollection : List<FStreamPath>, IComparable<FStreamPathCollection>
+    public class FStreamPathCollection : List<FStreamPath>
     {
         public void Add(IBaseFilter filter, IPin pin)
         {
@@ -23,32 +38,9 @@ namespace FoundaryMediaPlayer.Engine
             Add(new FStreamPath
             {
                 CLSID = WindowsInterop.GetCLSID(filter),
-                Filter = GetFilterName(filter),
-                Pin = GetPinName(pin)
+                Filter = GraphUtilities.GetFilterName(filter),
+                Pin = GraphUtilities.GetPinName(pin)
             });
-        }
-
-        /// <inheritdoc />
-        public int CompareTo(FStreamPathCollection other)
-        {
-            //TODO: Whot?
-            //POSITION pos1 = GetHeadPosition();
-            //POSITION pos2 = path.GetHeadPosition();
-
-            //while (pos1 && pos2) {
-            //    const path_t& p1 = GetNext(pos1);
-            //    const path_t& p2 = path.GetNext(pos2);
-
-            //    if (p1.filter != p2.filter) {
-            //        return true;
-            //    } else if (p1.pin != p2.pin) {
-            //        return false;
-            //    }
-            //}
-
-            //return true;
-
-            return 0;
         }
     }
 

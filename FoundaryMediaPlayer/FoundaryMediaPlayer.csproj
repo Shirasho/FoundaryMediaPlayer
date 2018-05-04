@@ -118,11 +118,11 @@
     <Reference Include="FluentAssertions, Version=5.3.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.5.3.0\lib\net47\FluentAssertions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Core, Version=0.2.11.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Core.0.2.11\lib\net45\Foundary.Core.dll</HintPath>
+    <Reference Include="Foundary.Core, Version=0.2.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Core.0.2.13\lib\net45\Foundary.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Interfaces, Version=0.2.11.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Interfaces.0.2.11\lib\net45\Foundary.Interfaces.dll</HintPath>
+    <Reference Include="Foundary.Interfaces, Version=0.2.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Interfaces.0.2.13\lib\net45\Foundary.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.Wpf.DragDrop, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.1.1.0\lib\net46\GongSolutions.Wpf.DragDrop.dll</HintPath>
@@ -152,16 +152,16 @@
       <HintPath>..\packages\Ninject.Extensions.Factory.3.3.2\lib\net45\Ninject.Extensions.Factory.dll</HintPath>
     </Reference>
     <Reference Include="PInvoke.Kernel32, Version=0.5.0.0, Culture=neutral, PublicKeyToken=9e300f9f87f04a7a, processorArchitecture=MSIL">
-      <HintPath>..\packages\PInvoke.Kernel32.0.5.134\lib\net45\PInvoke.Kernel32.dll</HintPath>
+      <HintPath>..\packages\PInvoke.Kernel32.0.5.147\lib\net45\PInvoke.Kernel32.dll</HintPath>
     </Reference>
     <Reference Include="PInvoke.User32, Version=0.5.0.0, Culture=neutral, PublicKeyToken=9e300f9f87f04a7a, processorArchitecture=MSIL">
-      <HintPath>..\packages\PInvoke.User32.0.5.134\lib\net45\PInvoke.User32.dll</HintPath>
+      <HintPath>..\packages\PInvoke.User32.0.5.147\lib\net45\PInvoke.User32.dll</HintPath>
     </Reference>
     <Reference Include="PInvoke.Windows.Core, Version=0.5.0.0, Culture=neutral, PublicKeyToken=9e300f9f87f04a7a, processorArchitecture=MSIL">
-      <HintPath>..\packages\PInvoke.Windows.Core.0.5.134\lib\net35\PInvoke.Windows.Core.dll</HintPath>
+      <HintPath>..\packages\PInvoke.Windows.Core.0.5.147\lib\net35\PInvoke.Windows.Core.dll</HintPath>
     </Reference>
     <Reference Include="PInvoke.Windows.ShellScalingApi, Version=0.5.0.0, Culture=neutral, PublicKeyToken=9e300f9f87f04a7a, processorArchitecture=MSIL">
-      <HintPath>..\packages\PInvoke.Windows.ShellScalingApi.0.5.134\lib\net45\PInvoke.Windows.ShellScalingApi.dll</HintPath>
+      <HintPath>..\packages\PInvoke.Windows.ShellScalingApi.0.5.147\lib\net45\PInvoke.Windows.ShellScalingApi.dll</HintPath>
     </Reference>
     <Reference Include="Prism, Version=7.0.0.396, Culture=neutral, PublicKeyToken=40ee6c3a2184dc59, processorArchitecture=MSIL">
       <HintPath>..\packages\Prism.Core.7.0.0.396\lib\net45\Prism.dll</HintPath>
@@ -278,6 +278,7 @@
     <Compile Include="Engine\Graphs\QuickTimeGraph.cs" />
     <Compile Include="Engine\Graphs\RealMediaGraph.cs" />
     <Compile Include="Engine\Graphs\ShockwaveGraph.cs" />
+    <Compile Include="Engine\GraphUtilities.cs" />
     <Compile Include="Engine\MediaChapter.cs" />
     <Compile Include="Engine\ECaptureDevice.cs" />
     <Compile Include="Engine\EEngineType.cs" />
@@ -295,6 +296,7 @@
     <Compile Include="Engine\MediaType.cs" />
     <Compile Include="Engine\Playlist.cs" />
     <Compile Include="Engine\PlaylistItem.cs" />
+    <Compile Include="Engine\RARFileSource.cs" />
     <Compile Include="Engine\StreamPath.cs" />
     <Compile Include="Engine\SubtitleInput.cs" />
     <Compile Include="Events\EventArgs\KeyBindingEventArgs.cs" />
@@ -324,6 +326,7 @@
     <Compile Include="Extensions\TimeSpanExtensions.cs" />
     <Compile Include="Interfaces\EDirectVobSubXyOptions.cs" />
     <Compile Include="Interfaces\EDirectXCreateFlags.cs" />
+    <Compile Include="Interfaces\IMFGetService.cs" />
     <Compile Include="Interfaces\LAV\ELAVAudioCodec.cs" />
     <Compile Include="Interfaces\LAV\ELAVAudioMixingFlag.cs" />
     <Compile Include="Interfaces\LAV\ELAVAudioMixingLayout.cs" />
@@ -372,6 +375,7 @@
     <Compile Include="Interfaces\ISubPicAllocatorPresenter2.cs" />
     <Compile Include="Interfaces\ISubPicQueue.cs" />
     <Compile Include="Interfaces\ISubStream.cs" />
+    <Compile Include="Interop\Windows\ComPointer.cs" />
     <Compile Include="Interop\Windows\D3DCAPS9.cs" />
     <Compile Include="Interop\Windows\D3DDEVICE_CREATION_PARAMETERS.cs" />
     <Compile Include="Interop\Windows\D3DDEVTYPE.cs" />
@@ -389,7 +393,8 @@
     <Compile Include="Interop\Windows\D3DSURFACE_DESC.cs" />
     <Compile Include="Interop\Windows\D3DSWAPEFFECT.cs" />
     <Compile Include="Interop\Windows\D3DVSHADERCAPS2_0.cs" />
-    <Compile Include="Interop\Windows\IID.cs" />
+    <Compile Include="Interop\Windows\UUID.CLSID.cs" />
+    <Compile Include="Interop\Windows\UUID.IID.cs" />
     <Compile Include="Interop\Windows\ComResult.cs" />
     <Compile Include="Interop\Windows\IUnknownCollection.cs" />
     <Compile Include="Interop\Windows\SIZE.cs" />

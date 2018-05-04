@@ -10,6 +10,7 @@ using DirectShowLib;
 using FluentAssertions;
 using Foundary;
 using Foundary.Extensions;
+using FoundaryMediaPlayer.Application;
 using FoundaryMediaPlayer.Interfaces;
 using FoundaryMediaPlayer.Interop.Windows;
 using log4net;
@@ -30,28 +31,34 @@ namespace FoundaryMediaPlayer.Engine.Graphs
     [Guid("09056CF8-B199-4E2E-9FE7-8EFCCA65E3EB")]
     [ClassInterface(ClassInterfaceType.None)]
     [SuppressMessage("ReSharper", "SuspiciousTypeConversion.Global")]
-    public sealed class NativeGraph : IGraphBuilder2, IGraphBuilderDeadEnd, IDisposable
+    [SuppressMessage("ReSharper", "RedundantAssignment")]
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public class NativeGraph : IGraphBuilder2, IGraphBuilderDeadEnd, IDisposable
     {
         private static ILog _Logger { get; } = LogManager.GetLogger(typeof(NativeGraph));
+
+        protected FApplicationStore Store { get; }
+        protected List<AFilterBase> SourceFilters { get; } = new List<AFilterBase>();
+        protected List<AFilterBase> TransformFilters { get; } = new List<AFilterBase>();
+        protected List<AFilterBase> OverrideFilters { get; } = new List<AFilterBase>();
 
         private IFilterGraph2 _FilterGraph { get; }
         private IFilterMapper2 _FilterMapper { get; }
 
-        private List<AFilterBase> _SourceFilters { get; } = new List<AFilterBase>();
-        private List<AFilterBase> _TransformFilters { get; } = new List<AFilterBase>();
-        private List<AFilterBase> _OverrideFilters { get; } = new List<AFilterBase>();
-
-        private FStreamPathCollection _StreamPaths { get; set; }
-        private List<FStreamDeadEndCollection> _StreamDeadEnds { get; } = new List<FStreamDeadEndCollection>();
+        private FStreamPathCollection _StreamPaths { get; } = new FStreamPathCollection();
+        private FStreamDeadEndCollection _StreamDeadEnds { get; } = new FStreamDeadEndCollection();
 
         private FIUnknownCollection _Unknowns { get; } = new FIUnknownCollection();
         private string _GraphId { get; } = string.Format(CultureInfo.InvariantCulture, "{0:B}", Marshal.GenerateGuidForType(typeof(NativeGraph)));
-        private ulong _Register { get; set; }
+        private int _Register { get; set; }
 
-        public NativeGraph()
+        public NativeGraph(FApplicationStore store)
         {
-            _FilterGraph = WindowsInterop.CoCreateInstance<IFilterGraph2>(IID.FilterGraph);
-            _FilterMapper = WindowsInterop.CoCreateInstance<IFilterMapper2>(IID.FilterMapper2);
+            store.Should().NotBeNull();
+
+            Store = store;
+            _FilterGraph = WindowsInterop.CoCreateInstance<IFilterGraph2>(CLSID.FilterGraph);
+            _FilterMapper = WindowsInterop.CoCreateInstance<IFilterMapper2>(CLSID.FilterMapper2);
 
             _FilterGraph.Should().NotBeNull();
             _FilterMapper.Should().NotBeNull();
@@ -73,9 +80,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             lock (this)
             {
-                _SourceFilters.Clear();
-                _TransformFilters.Clear();
-                _OverrideFilters.Clear();
+                SourceFilters.Clear();
+                TransformFilters.Clear();
+                OverrideFilters.Clear();
                 _Unknowns.Clear();
                 WindowsInterop.CoRelease(_FilterGraph);
             }
@@ -87,7 +94,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             lock (this)
             {
-                ComResult result;
+                int result;
                 if (ComResult.FAILED(result = _FilterGraph.AddFilter(pFilter, pName)))
                 {
                     return result;
@@ -129,10 +136,10 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             lock (this)
             {
-                var baseFilter = GetFilterFromPin(ppinIn);
+                var baseFilter = GraphUtilities.GetFilterFromPin(ppinIn);
                 var clsid = WindowsInterop.GetCLSID(baseFilter);
 
-                var baseFilterUpstream = GetFilterFromPin(ppinOut);
+                var baseFilterUpstream = GraphUtilities.GetFilterFromPin(ppinOut);
                 do
                 {
                     if (baseFilterUpstream == baseFilter)
@@ -145,7 +152,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         return new ComResult(HResult.E_FAIL);
                     }
 
-                    baseFilterUpstream = GetUpstreamFilter(baseFilterUpstream);
+                    baseFilterUpstream = GraphUtilities.GetUpstreamFilter(baseFilterUpstream);
                 } while (baseFilterUpstream != null);
 
                 return _FilterGraph.ConnectDirect(ppinOut, ppinIn, pmt);
@@ -191,7 +198,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     return new ComResult(HResult.E_POINTER);
                 }
 
-                ComResult result;
+                int result;
                 if (ComResult.FAILED(result = IsPinDirection(ppinOut, PinDirection.Output)) ||
                     (ppinIn != null && ComResult.FAILED(result = IsPinDirection(ppinIn, PinDirection.Input))))
                 {
@@ -234,16 +241,16 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     //TODO: _FilterGraph should be `this`, but this class is never an IGraphConfig.
                     if (_FilterGraph is IGraphConfig graphConfig)
                     {
-                        foreach (var filter in EnumCachedFilters(graphConfig))
+                        foreach (var filter in GraphUtilities.EnumCachedFilters(graphConfig))
                         {
-                            if (ppinIn != null && GetFilterFromPin(ppinIn) == filter)
+                            if (ppinIn != null && GraphUtilities.GetFilterFromPin(ppinIn) == filter)
                             {
                                 continue;
                             }
 
                             graphConfig.RemoveFilterFromCache(filter);
 
-                            if (ComResult.SUCCESS(result = ConnectFilterDirect(out ppinOut, filter, null)))
+                            if (ComResult.SUCCESS(result = ConnectFilterDirect(ppinOut, filter, null)))
                             {
                                 if (!IsStreamEnd(filter))
                                 {
@@ -265,10 +272,10 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 {
                     var filters = new List<IBaseFilter>();
 
-                    foreach (var filter in EnumFilters(this))
+                    foreach (var filter in GraphUtilities.EnumFilters(this))
                     {
-                        if ((ppinIn != null && GetFilterFromPin(ppinIn) == filter) ||
-                            GetFilterFromPin(ppinOut) == filter)
+                        if ((ppinIn != null && GraphUtilities.GetFilterFromPin(ppinIn) == filter) ||
+                            GraphUtilities.GetFilterFromPin(ppinOut) == filter)
                         {
                             continue;
                         }
@@ -285,7 +292,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                     foreach (var filter in filters)
                     {
-                        if (ComResult.SUCCESS(result = ConnectFilterDirect(out ppinOut, filter, null)))
+                        if (ComResult.SUCCESS(result = ConnectFilterDirect(ppinOut, filter, null)))
                         {
                             if (!IsStreamEnd(filter))
                             {
@@ -305,9 +312,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 // 4. Look up filters in the registry.
                 {
                     var filterList = new FFilterContainerCollection();
-                    var mediaTypes = ExtractMediaTypes(ppinOut);
+                    var mediaTypes = GraphUtilities.ExtractMediaTypes(ppinOut);
 
-                    foreach (var filter in _TransformFilters)
+                    foreach (var filter in TransformFilters)
                     {
                         if (filter.Merit < Merit.DoNotUse || filter.CheckTypes(mediaTypes, false))
                         {
@@ -315,7 +322,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         }
                     }
 
-                    foreach (var filter in _OverrideFilters)
+                    foreach (var filter in OverrideFilters)
                     {
                         if (filter.Merit < Merit.DoNotUse || filter.CheckTypes(mediaTypes, false))
                         {
@@ -379,7 +386,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                             continue;
                         }
 
-                        if (ComResult.SUCCESS(result = ConnectFilterDirect(out ppinOut, baseFilter, null)))
+                        if (ComResult.SUCCESS(result = ConnectFilterDirect(ppinOut, baseFilter, null)))
                         {
                             if (!IsStreamEnd(baseFilter))
                             {
@@ -394,7 +401,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                             if (ComResult.SUCCESS(result))
                             {
                                 _Unknowns.AddRange(unknowns);
-                                var mixerPinConfig = unknowns.FirstOrDefault(unk => unk is IMixerPinConfig && WindowsInterop.GetCLSID(unk) == IID.IMixerPinConfig, null);
+                                var mixerPinConfig = unknowns.FirstOrDefault(unk => unk is IMixerPinConfig && WindowsInterop.GetCLSID(unk) == CLSID.IMixerPinConfig, null);
                                 ((IMixerPinConfig)mixerPinConfig)?.SetAspectRatioMode(AspectRatioMode.Stretched);
 
                                 if (baseFilter is IVMRAspectRatioControl arc)
@@ -418,41 +425,41 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                                 }
 
                                 //TODO: Finish implementation.
-                                //if (baseFilter is IMFGetService mfgs && CLSID.GetCLSID(mfgs) == CLSID.GetCLSIDOf<IMFGetService>())
+                                if (baseFilter is IMFGetService mfgs && WindowsInterop.GetCLSID(mfgs) == WindowsInterop.GetCLSID<IMFGetService>())
                                 {
-                                    //    CComPtr<IMFVideoDisplayControl> pMFVDC;
-                                    //    CComPtr<IMFVideoMixerBitmap> pMFMB;
-                                    //    CComPtr<IMFVideoProcessor> pMFVP;
+                                //    CComPtr<IMFVideoDisplayControl> pMFVDC;
+                                //    CComPtr<IMFVideoMixerBitmap> pMFMB;
+                                //    CComPtr<IMFVideoProcessor> pMFVP;
 
-                                    //    if (mfgs.GetService(MR_VIDEO_RENDER_SERVICE, IID_PPV_ARGS(&pMFVDC)).IsSuccess())
-                                    //    {
-                                    //        _Unknowns.Add(pMFVDC);
-                                    //    }
+                                //    if (ComResult.SUCCESS(mfgs.GetService(IID.SERVICE_MRVideoAcceleration, IID_PPV_ARGS(&pMFVDC))))
+                                    {
+                                //        _Unknowns.Add(pMFVDC);
+                                    }
 
-                                    //    if (mfgs.GetService(MR_VIDEO_MIXER_SERVICE, IID_PPV_ARGS(&pMFMB)).IsSuccess())
-                                    //    {
-                                    //        _Unknowns.Add(pMFMB);
-                                    //    }
+                                //    if (ComResult.SUCCESS(mfgs.GetService(IID.SERVICE_MRVideoMixer, IID_PPV_ARGS(&pMFMB))))
+                                    {
+                                //        _Unknowns.Add(pMFMB);
+                                    }
 
-                                    //    if (mfgs.GetService(MR_VIDEO_MIXER_SERVICE, IID_PPV_ARGS(&pMFVP)).IsSuccess())
-                                    //    {
-                                    //        _Unknowns.Add(pMFVP);
-                                    //    }
+                                //    if (ComResult.SUCCESS(mfgs.GetService(IID.SERVICE_MRVideoMixer, IID_PPV_ARGS(&pMFVP))))
+                                    {
+                                //        _Unknowns.Add(pMFVP);
+                                    }
 
                                     if (madVRAllocatorPresenter != null)
                                     {
-                                        //        // Hook DXVA to have status and logging.
-                                        //        CComPtr<IDirectXVideoDecoderService> pDecoderService;
-                                        //        CComPtr<IDirect3DDeviceManager9> pDeviceManager;
-                                        //        HANDLE hDevice = INVALID_HANDLE_VALUE;
+                                //        // Hook DXVA to have status and logging.
+                                //        IDirectXVideoDecoderService pDecoderService;
+                                //        IDirect3DDeviceManager9 pDeviceManager;
+                                //        IntPtr hDevice = IntPtr.Zero;
 
-                                        //        if (mfgs->GetService(MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&pDeviceManager)).IsSuccess()
-                                        //            && pDeviceManager->OpenDeviceHandle(&hDevice).IsSuccess()
-                                        //            && pDeviceManager->GetVideoService(hDevice, IID_PPV_ARGS(&pDecoderService)).IsSuccess())
-                                        //        {
-                                        //            HookDirectXVideoDecoderService(pDecoderService);
-                                        //            pDeviceManager->CloseDeviceHandle(hDevice);
-                                        //        }
+                                //        if (mfgs.GetService(MR_VIDEO_ACCELERATION_SERVICE, IID_PPV_ARGS(&pDeviceManager)).IsSuccess()
+                                //            && ComResult.SUCCESS(pDeviceManager.OpenDeviceHandle(hDevice))
+                                //            && ComResult.SUCCESS(pDeviceManager.GetVideoService(hDevice, IID_PPV_ARGS(&pDecoderService))))
+                                        {
+                                //            HookDirectXVideoDecoderService(pDecoderService);
+                                //            pDeviceManager.CloseDeviceHandle(hDevice);
+                                        }
                                     }
                                 }
 
@@ -468,9 +475,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     streamDeadEnd.AddRange(_StreamPaths);
 
                     int skip = 0;
-                    foreach (var mediaType in EnumMediaTypes(ppinOut))
+                    foreach (var mediaType in GraphUtilities.EnumMediaTypes(ppinOut))
                     {
-                        if (mediaType.majorType == IID.MEDIATYPE_Stream && 
+                        if (mediaType.majorType == IID.MEDIATYPE_Stream &&
                             mediaType.subType == Guid.Empty)
                         {
                             ++skip;
@@ -479,7 +486,8 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         streamDeadEnd.MediaTypes.Add(mediaType);
                     }
 
-                    if (skip < streamDeadEnd.MediaTypes.Count) {
+                    if (skip < streamDeadEnd.MediaTypes.Count)
+                    {
                         _StreamDeadEnds.AddRange(streamDeadEnd);
                     }
                 }
@@ -507,7 +515,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                 var deadEnds = new FStreamDeadEndCollection();
 
-                ComResult result;
+                int result;
                 // ReSharper disable once InconsistentNaming
                 ComResult resultRFS = HResult.S_OK;
 
@@ -541,7 +549,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
                 _StreamDeadEnds.AddRange(deadEnds);
 
-                return resultRFS != HResult.S_OK ? resultRFS : result;
+                return resultRFS != HResult.S_OK ? (int)resultRFS : result;
             }
         }
 
@@ -551,7 +559,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             {
                 ppFilter = null;
 
-                ComResult result;
+                int result;
                 if (ComResult.FAILED(result = EnumSourceFilters(lpcwstrFileName, out FFilterContainerCollection filterList)))
                 {
                     return result;
@@ -564,7 +572,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         return result;
                     }
                 }
-                
+
                 return new ComResult(HResult.E_FAIL);
             }
         }
@@ -611,7 +619,55 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
         public int RenderEx(IPin pPinOut, AMRenderExFlags dwFlags, IntPtr pvContext)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                _StreamPaths.Clear();
+                _StreamDeadEnds.Clear();
+
+                if (pPinOut == null || dwFlags > AMRenderExFlags.RenderToExistingRenderers)
+                {
+                    return new ComResult(HResult.E_INVALIDARG);
+                }
+
+                if (dwFlags.HasFlag(AMRenderExFlags.RenderToExistingRenderers))
+                {
+                    var filterList = new List<IBaseFilter>();
+                    foreach (var filter in GraphUtilities.EnumFilters(this))
+                    {
+                        if (filter is IAMFilterMiscFlags filterMiscFlags &&
+                            (filterMiscFlags.GetMiscFlags() & (int) AMRenderExFlags.None) > 0)
+                        {
+                            filterList.Add(filter);
+                        }
+                        else
+                        {
+                            var pPinIn = new IPin[] {null};
+                            foreach (var pin in GraphUtilities.EnumPins(filter))
+                            {
+                                int count = 0;
+                                if (ComResult.SUCCESS(pin.QueryInternalConnections(pPinIn, ref count)) && count == 0)
+                                {
+                                    filterList.Add(filter);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    int result = unchecked((int)HResult.E_FAIL);
+                    foreach (var filter in filterList)
+                    {
+                        if (ComResult.SUCCESS(result = ConnectFilter(pPinOut, filter)))
+                        {
+                            return result;
+                        }
+                    }
+
+                    return result;
+                }
+
+                return Connect(pPinOut, null);
+            }
         }
 
         public int IsPinDirection(IPin pPin, PinDirection dir)
@@ -650,22 +706,206 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
         public int ConnectFilter(IBaseFilter pBF, IPin pPinIn)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                if (pBF == null)
+                {
+                    return new ComResult(HResult.E_POINTER);
+                }
+
+                int result;
+                if (pPinIn != null && ComResult.FAILED(result = IsPinDirection(pPinIn, PinDirection.Input)))
+                {
+                    return result;
+                }
+
+                int total = 0;
+                int rendered = 0;
+
+                foreach (var pin in GraphUtilities.EnumPins(pBF))
+                {
+                    if (ComResult.SUCCESS(result = IsPinDirection(pin, PinDirection.Output), true) &&
+                        ComResult.FAILED(result = IsPinConnected(pin)) &&
+                        !(Store.VideoRenderer != EVideoRenderer.EVRCustom &&
+                          Store.VideoRenderer != EVideoRenderer.EVR &&
+                          Store.VideoRenderer != EVideoRenderer.Sync &&
+                          GraphUtilities.GetPinName(pin)[0] == '~'))
+                    {
+                        pBF.GetClassID(out Guid clsid);
+                        // Disable DVD subtitle mixing in EVR (CP) and Sync Renderer for Microsoft DTV-DVD Video Decoder, it corrupts DVD playback.
+                        if (clsid == IID.CMPEG2VideoDecoderDS &&
+                            (Store.VideoRenderer == EVideoRenderer.EVRCustom || Store.VideoRenderer == EVideoRenderer.Sync) &&
+                            GraphUtilities.GetPinName(pin)[0] == '~')
+                        {
+                            continue;
+                        }
+
+                        // No multiple pin for Internal MPEG2 Software Decoder, NVIDIA PureVideo Decoder, Sonic Cinemaster VideoDecoder
+                        if ((clsid == IID.CMPEG2DecoderFilter ||
+                             clsid == IID.NvidiaVideoDecoder ||
+                             clsid == IID.SonicCinemasterVideoDecoder) &&
+                            GraphUtilities.GetPinName(pin)[0] == '~')
+                        {
+                            continue;
+                        }
+
+                        _StreamPaths.Add(pBF, pin);
+                        if (ComResult.SUCCESS(result = Connect(pin, pPinIn)))
+                        {
+                            for (int i = _StreamDeadEnds.Count - 1; i >= 0; --i)
+                            {
+                                if (!_StreamPaths.IsValidIndex(i))
+                                {
+                                    break;
+                                }
+
+                                if (_StreamDeadEnds[i].Compare(_StreamPaths[i]))
+                                {
+                                    _StreamDeadEnds.RemoveAt(i);
+                                }
+                            }
+
+                            ++rendered;
+                        }
+
+                        ++total;
+
+                        _StreamPaths.RemoveLast();
+
+                        if (ComResult.SUCCESS(result) && pPinIn != null)
+                        {
+                            return new ComResult(HResult.S_OK);
+                        }
+                    }
+                }
+
+                return rendered == total
+                    ? new ComResult(rendered > 0 ? HResult.S_OK : HResult.S_FALSE)
+                    : new ComResult(rendered > 0 ? 0x00040242L : 0x80040218L);
+            }
         }
 
-        public int ConnectFilter(out IPin pPinOut, IBaseFilter pBF)
+        public int ConnectFilter(IPin pPinOut, IBaseFilter pBF)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                if (pPinOut == null || pBF == null)
+                {
+                    return new ComResult(HResult.E_POINTER);
+                }
+
+                int result;
+                if (ComResult.FAILED(result = IsPinDirection(pPinOut, PinDirection.Output)))
+                {
+                    return result;
+                }
+
+                foreach (var pin in GraphUtilities.EnumPins(pBF))
+                {
+                    if (ComResult.SUCCESS(result = IsPinDirection(pin, PinDirection.Input), true) &&
+                        ComResult.FAILED(result = IsPinConnected(pin)) &&
+                        !(Store.VideoRenderer != EVideoRenderer.EVRCustom &&
+                          Store.VideoRenderer != EVideoRenderer.EVR &&
+                          Store.VideoRenderer != EVideoRenderer.Sync &&
+                          GraphUtilities.GetPinName(pin)[0] == '~'))
+                    {
+                        if (ComResult.SUCCESS(result = Connect(pPinOut, pin)))
+                        {
+                            return result;
+                        }
+                    }
+                }
+
+                return result;
+            }
         }
 
-        public int ConnectFilterDirect(out IPin pPinOut, IBaseFilter pBF, AMMediaType pmt)
+        public int ConnectFilterDirect(IPin pPinOut, IBaseFilter pBF, AMMediaType pmt)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                if (pPinOut == null || pBF == null)
+                {
+                    return new ComResult(HResult.E_POINTER);
+                }
+
+                int result;
+                if (ComResult.FAILED(result = IsPinDirection(pPinOut, PinDirection.Output)))
+                {
+                    return result;
+                }
+
+                foreach (var pin in GraphUtilities.EnumPins(pBF))
+                {
+                    if (ComResult.SUCCESS(result = IsPinDirection(pin, PinDirection.Input), true) &&
+                        ComResult.FAILED(result = IsPinConnected(pin)) &&
+                        !(Store.VideoRenderer != EVideoRenderer.EVRCustom &&
+                          Store.VideoRenderer != EVideoRenderer.EVR &&
+                          Store.VideoRenderer != EVideoRenderer.Sync &&
+                          GraphUtilities.GetPinName(pin)[0] == '~'))
+                    {
+                        if (ComResult.SUCCESS(result = ConnectDirect(pPinOut, pin, pmt)))
+                        {
+                            return result;
+                        }
+                    }
+                }
+
+                return result;
+            }
         }
 
         public int NukeDownstream(object pUnk)
         {
-            throw new NotImplementedException();
+            lock (this)
+            {
+                if (pUnk is IBaseFilter baseFilter)
+                {
+                    foreach (var pin in GraphUtilities.EnumPins(baseFilter))
+                    {
+                        NukeDownstream(pin);
+                    }
+                }
+                else if (pUnk is IPin pin)
+                {
+                    if (ComResult.SUCCESS(IsPinDirection(pin, PinDirection.Output), true) &&
+                        ComResult.SUCCESS(pin.ConnectedTo(out IPin pPinTo)) && pPinTo != null)
+                    {
+                        var filter = GraphUtilities.GetFilterFromPin(pPinTo);
+                        if (filter != null && WindowsInterop.HasGuid(filter, CLSID.EnhancedVideoRenderer))
+                        {
+                            // GetFilterFromPin() returns pointer to the Base EVR,
+                            // but we need to remove Outer EVR from the graph.
+
+                            /*
+                             * ET: C++ IUnknown.QueryInterface() is the same as
+                             * C# `Concrete is Class/Interface variableName` pattern matching.
+                             */
+                            //if (ComResult.SUCCESS(filter.QueryInterface(out IBaseFilter outerEVR)))
+                            //{
+                            //    filter = outerEVR;
+                            //}
+
+                            // ET: Makes no sense though...
+                            if (filter is IBaseFilter outerEVR)
+                            {
+                                filter = outerEVR;
+                            }
+                        }
+
+                        NukeDownstream(filter);
+                        Disconnect(pPinTo);
+                        Disconnect(pin);
+                        RemoveFilter(filter);
+                    }
+                }
+                else
+                {
+                    return new ComResult(HResult.E_INVALIDARG);
+                }
+
+                return new ComResult(HResult.S_OK);
+            }
         }
 
         public int FindInterface(ref Guid iid, out IntPtr ppv, bool bRemove)
@@ -704,13 +944,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     return new ComResult(HResult.S_FALSE);
                 }
 
-                ComResult result;
-
-                if (ComResult.SUCCESS(result = WindowsInterop.GetRunningObjectTable(0, out IRunningObjectTable rot)) &&
-                    ComResult.SUCCESS(result = WindowsInterop.CreateItemMoniker("!", _GraphId, out IMoniker moniker)))
-                {
-                    _Register = (ulong)rot.Register((int)ERunningObjectTableFlags.RegistrationKeepAlive, this, moniker);
-                }
+                _Register = WindowsInterop.AddToROT(this, _GraphId, out ComResult result);
 
                 return result;
             }
@@ -725,11 +959,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     return new ComResult(HResult.S_FALSE);
                 }
 
-                ComResult result;
-
-                if (ComResult.SUCCESS(result = WindowsInterop.GetRunningObjectTable(0, out IRunningObjectTable rot)))
+                int result;
+                if (ComResult.SUCCESS(result = WindowsInterop.RemoveFromROT(_Register)))
                 {
-                    rot.Revoke((int)_Register);
                     _Register = 0;
                 }
 
@@ -759,12 +991,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 mts.Clear();
 
                 var deadEnds = _StreamDeadEnds[iIndex];
-                foreach (var deadEnd in deadEnds)
-                {
-                    path.Add($"{deadEnd.Filter}::{deadEnd.Pin}");
-                }
+                path.Add($"{deadEnds.Filter}::{deadEnds.Pin}");
 
-                mts.AddRange(_StreamDeadEnds[iIndex].MediaTypes);
+                mts.AddRange(_StreamDeadEnds.MediaTypes);
 
                 return new ComResult(HResult.S_OK);
             }
@@ -816,7 +1045,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             if (file == null || !file.Exists)
             {
                 // Internet protocol.
-                foreach (var filter in _SourceFilters)
+                foreach (var filter in SourceFilters)
                 {
                     if (filter.Protocols.Contains(protocol))
                     {
@@ -827,11 +1056,11 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             else
             {
                 // Internal.
-                foreach (var filter in _SourceFilters)
+                foreach (var filter in SourceFilters)
                 {
                     foreach (var bytes in filter.CheckBytes)
                     {
-                        if (CheckBytes(file, bytes))
+                        if (GraphUtilities.CheckBytes(file, bytes))
                         {
                             filterList.Add(filter, 1, false);
                             break;
@@ -844,7 +1073,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             {
                 // Internal / file extension
 
-                foreach (var filter in _SourceFilters)
+                foreach (var filter in SourceFilters)
                 {
                     if (filter.Extensions.Contains(ext))
                     {
@@ -854,7 +1083,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             }
 
             // The rest.
-            foreach (var filter in _SourceFilters)
+            foreach (var filter in SourceFilters)
             {
                 if (filter.Protocols.Count == 0 && filter.CheckBytes.Count == 0 && filter.Extensions.Count == 0)
                 {
@@ -868,7 +1097,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 {
                     if (Guid.TryParse(reg.GetString(ext), out Guid guid))
                     {
-                        filterList.Add(LookupFilterRegistry(guid, _OverrideFilters), 4, false);
+                        filterList.Add(LookupFilterRegistry(guid, OverrideFilters), 4, false);
                     }
                 }
 
@@ -876,7 +1105,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 {
                     if (Guid.TryParse(reg.GetString("Source Filter"), out Guid guid))
                     {
-                        filterList.Add(LookupFilterRegistry(guid, _OverrideFilters), 5, false);
+                        filterList.Add(LookupFilterRegistry(guid, OverrideFilters), 5, false);
                     }
                 }
             }
@@ -904,9 +1133,9 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                                 foreach (var regValueEntry in enumSubKey.GetValues())
                                 {
                                     var regValue = regValueEntry.Value.ToString();
-                                    if (CheckBytes(file, regValue))
+                                    if (GraphUtilities.CheckBytes(file, regValue))
                                     {
-                                        var filter = LookupFilterRegistry(clsid, _OverrideFilters);
+                                        var filter = LookupFilterRegistry(clsid, OverrideFilters);
                                         filter.AddType(majorType, subType);
                                         filterList.Add(filter, 0, false);
                                         break;
@@ -931,14 +1160,14 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                         Guid.TryParse(extKey.GetString("MediaType"), out Guid majorType);
                         Guid.TryParse(extKey.GetString("SubType"), out Guid subType);
 
-                        var filter = LookupFilterRegistry(sourceFilterGuid, _OverrideFilters);
+                        var filter = LookupFilterRegistry(sourceFilterGuid, OverrideFilters);
                         filter.AddType(majorType, subType);
                         filterList.Add(filter, 7, false);
                     }
                 }
             }
 
-            var arFilter = LookupFilterRegistry(IID.AsyncReader, _OverrideFilters);
+            var arFilter = LookupFilterRegistry(IID.AsyncReader, OverrideFilters);
             arFilter.AddType(IID.MEDIATYPE_Stream, Guid.Empty);
             filterList.Add(arFilter, 9, false);
 
@@ -947,7 +1176,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
         private int AddSourceFilter(AFilterBase filter, string lpcwstrFileName, string lpcwstrFilterName, out IBaseFilter baseFilter)
         {
-            ComResult result;
+            int result;
             baseFilter = null;
 
             if (ComResult.FAILED(result = filter.Create(out IBaseFilter createFilter, out IList<object> unks)))
@@ -981,14 +1210,11 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                 return result;
             }
 
-            foreach (var mediaType in EnumMediaTypes(GetFirstPin(createFilter, PinDirection.Output)))
+            foreach (var mediaType in GraphUtilities.EnumMediaTypes(GraphUtilities.GetFirstPin(createFilter, PinDirection.Output)))
             {
-                //    static const GUID guid1 =
-                //    { 0x640999A0, 0xA946, 0x11D0, { 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
-                //    static const GUID guid2 =
-                //    { 0x640999A1, 0xA946, 0x11D0, { 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } };
-                //    static const GUID guid3 =
-                //    { 0xD51BD5AE, 0x7548, 0x11CF, { 0xA5, 0x20, 0x00, 0x80, 0xC7, 0x7E, 0xF5, 0x8A } };
+                var guid1 = new Guid(0x640999A0, 0xA946, 0x11D0, 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+                var guid2 = new Guid(0x640999A1, 0xA946, 0x11D0, 0xA5, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+                var guid3 = new Guid(0xD51BD5AE, 0x7548, 0x11CF, 0xA5, 0x20, 0x00, 0x80, 0xC7, 0x7E, 0xF5, 0x8A);
                 if (mediaType.subType == guid1 ||
                     mediaType.subType == guid2 ||
                     mediaType.subType == guid3)
@@ -1008,7 +1234,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             nIn = nOut = nInC = nOutC = 0;
 
-            foreach (var pin in EnumPins(filter))
+            foreach (var pin in GraphUtilities.EnumPins(filter))
             {
                 if (pin.QueryDirection(out var pinDir) == 0)
                 {
@@ -1039,137 +1265,6 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         {
             CountPins(filter, out _, out int nOut, out _, out _);
             return nOut == 0;
-        }
-
-        private IBaseFilter GetFilterFromPin(IPin pPin)
-        {
-            if (pPin == null)
-            {
-                return null;
-            }
-
-            IBaseFilter result = null;
-            if (pPin.QueryPinInfo(out var pinInfo) >= 0)
-            {
-                result = pinInfo.filter;
-            }
-            return result;
-        }
-
-        private IBaseFilter GetUpstreamFilter(IBaseFilter baseFilter, IPin inputPin = null)
-        {
-            return GetFilterFromPin(GetUpstreamPin(baseFilter, inputPin));
-        }
-
-        private IPin GetUpstreamPin(IBaseFilter baseFilter, IPin inputPin)
-        {
-            foreach (var pin in EnumPins(baseFilter))
-            {
-                if (inputPin != null && inputPin != pin)
-                {
-                    continue;
-                }
-
-                if (pin.QueryDirection(out var dir) >= 0 && dir == PinDirection.Input && pin.ConnectedTo(out var pinConnectedTo) >= 0)
-                {
-                    return pinConnectedTo;
-                }
-            }
-
-            return null;
-        }
-
-        private IReadOnlyList<Guid> ExtractMediaTypes(IPin pin)
-        {
-            var mediaTypes = new List<Guid>();
-
-            foreach (var mediaType in EnumMediaTypes(pin))
-            {
-                bool bFound = false;
-                for (int i = 0; !bFound && i < mediaTypes.Count; i += 2)
-                {
-                    if (mediaTypes[i] == mediaType.majorType && mediaTypes[i + 1] == mediaType.subType)
-                    {
-                        bFound = true;
-                    }
-                }
-
-                if (!bFound)
-                {
-                    mediaTypes.Add(mediaType.majorType);
-                    mediaTypes.Add(mediaType.subType);
-                }
-            }
-
-            return mediaTypes;
-        }
-
-        private IEnumerable<IPin> EnumPins(IBaseFilter baseFilter)
-        {
-            if (baseFilter != null && baseFilter.EnumPins(out var enumPins) >= 0)
-            {
-                var pins = new IPin[] { null };
-                while (enumPins.Next(1, pins, IntPtr.Zero) == 0)
-                {
-                    yield return pins[0];
-                    pins[0] = null;
-                }
-            }
-        }
-
-        private IPin GetFirstPin(IBaseFilter baseFilter, PinDirection direction)
-        {
-            if (baseFilter != null)
-            {
-                foreach (var pin in EnumPins(baseFilter))
-                {
-                    if (ComResult.SUCCESS(pin.QueryDirection(out PinDirection dir)) && direction == dir)
-                    {
-                        return pin;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private IEnumerable<AMMediaType> EnumMediaTypes(IPin pin)
-        {
-            if (pin != null && ComResult.SUCCESS(pin.EnumMediaTypes(out IEnumMediaTypes enumMediaTypes)))
-            {
-                var mediaTypes = new AMMediaType[] { null };
-                while (ComResult.SUCCESS(enumMediaTypes.Next(1, mediaTypes, IntPtr.Zero), true))
-                {
-                    yield return mediaTypes[0];
-                    mediaTypes[0] = null;
-                }
-            }
-        }
-
-        private IEnumerable<IBaseFilter> EnumFilters(IFilterGraph filterGraph)
-        {
-            if (filterGraph != null && ComResult.SUCCESS(filterGraph.EnumFilters(out var enumFilters)))
-            {
-                var filters = new IBaseFilter[] { null };
-                while (ComResult.SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
-                {
-                    yield return filters[0];
-                    filters[0] = null;
-                }
-            }
-        }
-
-        private IEnumerable<IBaseFilter> EnumCachedFilters(IGraphConfig graphConfig)
-        {
-            if (graphConfig != null && ComResult.SUCCESS(graphConfig.EnumCacheFilter(out var enumFilters)))
-            {
-                var filters = new IBaseFilter[] { null };
-                while (ComResult.SUCCESS(enumFilters.Next(1, filters, IntPtr.Zero), true))
-                {
-                    yield return filters[0];
-                    filters[0] = null;
-                }
-            }
         }
     }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -136,6 +138,51 @@ namespace FoundaryMediaPlayer.Interop.Windows
         }
 
         [PublicAPI]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public static int AddToROT(object pUnkObj, string item, ERunningObjectTableFlags flags = ERunningObjectTableFlags.RegistrationKeepAlive)
+        {
+            return AddToROT(pUnkObj, item, out _, flags);
+        }
+
+        [PublicAPI]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public static int AddToROT(object pUnkObj, string item, out ComResult comResult, ERunningObjectTableFlags flags = ERunningObjectTableFlags.RegistrationKeepAlive)
+        {
+            int result;
+            if (ComResult.SUCCESS(result = GetRunningObjectTable(0, out IRunningObjectTable rot)) &&
+                ComResult.SUCCESS(result = CreateItemMoniker("!", item, out IMoniker moniker)))
+            {
+                comResult = result;
+                return rot.Register((int) flags, pUnkObj, moniker);
+            }
+
+            comResult = result;
+            return 0;
+        }
+        
+        [PublicAPI]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        public static ComResult RemoveFromROT(int register)
+        {
+            int result;
+            if (ComResult.SUCCESS(result = GetRunningObjectTable(0, out IRunningObjectTable rot)))
+            {
+                rot.Revoke(register);
+            }
+
+            return result;
+        }
+
+        [PublicAPI]
+        [SuppressMessage("ReSharper", "InconsistentNaming")]
+        [DebuggerStepThrough]
+        [DebuggerHidden]
+        public static void RemoveFromROT(int register, out ComResult comResult)
+        {
+            comResult = RemoveFromROT(register);
+        }
+
+        [PublicAPI]
         [SecurityPermission(SecurityAction.LinkDemand, UnmanagedCode = true)]
         [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
         public static bool IsCLSIDRegistered(Guid clsid)
@@ -198,17 +245,30 @@ namespace FoundaryMediaPlayer.Interop.Windows
         /// Gets the CLSID of the specified class.
         /// </summary>
         /// <param name="type">The <see cref="Type"/> to get the CLSID of.</param>
+        /// <param name="bInherit">Whether to look up the heirarchy for an explicit <see cref="GuidAttribute"/>.</param>
         /// <returns></returns>
         [PublicAPI]
-        public static Guid GetCLSID(Type type)
+        public static Guid GetCLSID(Type type, bool bInherit = false)
         {
             if (type == null)
             {
                 return Guid.Empty;
             }
 
-            var attribute = type.GetCustomAttribute<GuidAttribute>();
+            var attribute = type.GetCustomAttribute<GuidAttribute>(bInherit);
             return attribute != null ? Guid.Parse(attribute.Value) : type.GUID;
+        }
+
+        /// <summary>
+        /// Gets the CLSID for the specified object.
+        /// </summary>
+        /// <param name="obj">The object.</param>
+        /// <param name="bInherit">Whether to look up the heirarchy for an explicit <see cref="GuidAttribute"/>.</param>
+        /// <returns>The <see cref="Guid"/> of the object.</returns>
+        [PublicAPI]
+        public static Guid GetCLSID(object obj, bool bInherit = false)
+        {
+            return GetCLSID(obj?.GetType(), bInherit);
         }
 
         /// <summary>
@@ -241,13 +301,13 @@ namespace FoundaryMediaPlayer.Interop.Windows
         {
             switch (renderer)
             {
-                case EVideoRenderer.EVR: return IID.EnhancedVideoRenderer;
+                case EVideoRenderer.EVR: return CLSID.EnhancedVideoRenderer;
                 case EVideoRenderer.MadVR: return IID.MadVR;
                 //TODO: Get the GUID for these.
                 case EVideoRenderer.VMR9Renderless: return Guid.Empty;
                 case EVideoRenderer.VMR9Windowed: return Guid.Empty;
                 case EVideoRenderer.Null: return Guid.Empty;
-                case EVideoRenderer.EVRCustom: return IID.EnhancedVideoRendererCustom;
+                case EVideoRenderer.EVRCustom: return CLSID.EnhancedVideoRendererCustom;
                 case EVideoRenderer.Sync: return IID.Sync;
             }
 
@@ -255,19 +315,28 @@ namespace FoundaryMediaPlayer.Interop.Windows
         }
 
         /// <summary>
-        /// Gets the CLSID for the specified object.
+        /// Returns whether the provided object has the specified <see cref="Guid"/>.
         /// </summary>
         /// <param name="obj">The object.</param>
-        /// <returns>The <see cref="Guid"/> of the object.</returns>
-        [PublicAPI]
-        public static Guid GetCLSID(object obj)
+        /// <param name="clsid">The CLSID.</param>
+        /// <param name="bInherit">Whether to look at the object's parents for the CLSID.</param>
+        /// <returns></returns>
+        public static bool HasGuid(object obj, Guid clsid, bool bInherit = true)
         {
-            if (obj == null)
+            if (obj == null || clsid == Guid.Empty)
             {
-                return Guid.Empty;
+                return false;
             }
 
-            return obj.GetType().GetTypeInfo().GUID;
+            var type = obj.GetType().GetTypeInfo();
+
+            var attributes = type.GetCustomAttributes<GuidAttribute>(bInherit).ToArray();
+            if (attributes.Any(attribute => clsid == Guid.Parse(attribute.Value)))
+            {
+                return true;
+            }
+
+            return type.GUID == clsid;
         }
     }
 }

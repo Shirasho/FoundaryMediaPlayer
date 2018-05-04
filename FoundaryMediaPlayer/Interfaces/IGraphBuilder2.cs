@@ -26,10 +26,10 @@ namespace FoundaryMediaPlayer.Interfaces
         int ConnectFilter([In] IBaseFilter pBF, [In] IPin pPinIn);
 
         [MethodImpl(MethodImplOptions.PreserveSig)]
-        int ConnectFilter([Out] out IPin pPinOut, [In] IBaseFilter pBF);
+        int ConnectFilter([In] IPin pPinOut, [In] IBaseFilter pBF);
 
         [MethodImpl(MethodImplOptions.PreserveSig)]
-        int ConnectFilterDirect([Out] out IPin pPinOut, [In] IBaseFilter pBF, [MarshalAs(UnmanagedType.LPStruct), In] AMMediaType pmt);
+        int ConnectFilterDirect([In] IPin pPinOut, [In] IBaseFilter pBF, [MarshalAs(UnmanagedType.LPStruct), In] AMMediaType pmt);
 
         [MethodImpl(MethodImplOptions.PreserveSig)]
         int NukeDownstream([MarshalAs(UnmanagedType.IUnknown), In] object pUnk);

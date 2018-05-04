@@ -4,33 +4,16 @@ using System.Diagnostics.CodeAnalysis;
 namespace FoundaryMediaPlayer.Interop.Windows
 {
     /// <summary>
-    /// CLSIDs.
+    /// IIDs.
     /// </summary>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static class IID
     {
-        public const string CLSID_IUnknown = "00000000-0000-0000-C000-000000000046";
-        public static Guid IUnknown { get; } = new Guid(CLSID_IUnknown);
-
-        public const string CLSID_IMixerPinConfig = "593CDDE1-0759-11d1-9E69-00C04FD7C15B";
-        public static Guid IMixerPinConfig { get; } = new Guid(CLSID_IMixerPinConfig);
-
-        public const string CLSID_IMixerPinConfig2 = "EBF47182-8764-11d1-9E69-00C04FD7C15B";
-        public static Guid IMixerPinConfig2 { get; } = new Guid(CLSID_IMixerPinConfig);
+        public static Guid None { get; } = Guid.Empty;
 
         public const string CLSID_Proxy = "17CCA71B-ECD7-11D0-B908-00A0C9223196";
         public static Guid Proxy { get; } = new Guid(CLSID_Proxy);
-
-        public const string CLSID_FilterGraph = "E436EBB3-524F-11CE-9F53-0020AF0BA770";
-        public static Guid FilterGraph { get; } = new Guid(CLSID_FilterGraph);
-
-        public const string CLSID_FilterMapper2 = "CDA42200-BD88-11d0-BD4E-00A0C911CE86";
-        public static Guid FilterMapper2 { get; } = new Guid(CLSID_FilterMapper2);
-
-        public const string CLSID_EnhancedVideoRenderer = "FA10746C-9B63-4B6C-BC49-FC300EA5F256";
-        public static Guid EnhancedVideoRenderer { get; } = new Guid(CLSID_EnhancedVideoRenderer);
-        public static Guid EnhancedVideoRendererCustom { get; } = EnhancedVideoRenderer;
-
+        
         public const string CLSID_NetShowSource = "6B6D0800-9ADA-11d0-A520-00A0D10129C0";
         public static Guid NetShowSource { get; } = new Guid(CLSID_NetShowSource);
 
@@ -76,6 +59,19 @@ namespace FoundaryMediaPlayer.Interop.Windows
         public const string CLSID_AudioRecord = "E30629D2-27E5-11CE-875D-00608CB78066";
         public static Guid AudioRecord { get; } = new Guid(CLSID_AudioRecord);
 
+        public const string CLSID_CMPEG2VideoDecoderDS = "212690FB-83E5-4526-8FD7-74478B7939CD";
+        public static Guid CMPEG2VideoDecoderDS { get; } = new Guid(CLSID_CMPEG2VideoDecoderDS);
+
+        public const string CLSID_CMPEG2DecoderFilter = "39F498AF-1A09-4275-B193-673B0BA3D478";
+        public static Guid CMPEG2DecoderFilter { get; } = new Guid(CLSID_CMPEG2DecoderFilter);
+
+        public const string CLSID_NvidiaVideoDecoder = "71E4616A-DB5E-452B-8CA5-71D9CC7805E9";
+        public static Guid NvidiaVideoDecoder { get; } = new Guid(CLSID_NvidiaVideoDecoder);
+
+        public const string CLSID_SonicCinemasterVideoDecoder = "D7D50E8D-DD72-43C2-8587-A0C197D837D2";
+        public static Guid SonicCinemasterVideoDecoder { get; } = new Guid(CLSID_SonicCinemasterVideoDecoder);
+
+
         public const string IID_AsyncReader = "E436EBB5-524F-11CE-9F53-0020AF0BA770";
         public static Guid AsyncReader { get; } = new Guid(IID_AsyncReader);
 
@@ -86,6 +82,13 @@ namespace FoundaryMediaPlayer.Interop.Windows
 
         public const string IID_MEDIATYPE_Stream = "E436EB83-524F-11CE-9F53-0020AF0BA770";
         public static Guid MEDIATYPE_Stream { get; } = new Guid(IID_MEDIATYPE_Stream);
+
+
+        public const string IID_SERVICE_MRVideoAcceleration = "EFEF5175-5C7D-4CE2-BBBD-34FF8BCA6554";
+        public static Guid SERVICE_MRVideoAcceleration { get; } = new Guid(IID_SERVICE_MRVideoAcceleration);
+
+        public const string IID_SERVICE_MRVideoMixer = "073CD2FC-6CF4-40B7-8859-E89552C841F8";
+        public static Guid SERVICE_MRVideoMixer { get; } = new Guid(IID_SERVICE_MRVideoMixer);
 
         private const string CLSID_VMR9 = "51B4ABF3-748F-4E3B-A276-C828330E926A";
     }

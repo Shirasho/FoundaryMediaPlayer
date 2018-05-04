@@ -31,18 +31,37 @@ namespace FoundaryMediaPlayer.Interop.Windows
     ///
     /// </example>
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public struct ComResult
+    public class ComResult
     {
         private int _Value { get; }
 
+        /// <summary>
+        /// A result using <see cref="HResult"/>.
+        /// </summary>
+        /// <param name="code"></param>
         public ComResult(HResult code)
         {
             _Value = unchecked((int) code);
         }
 
+        /// <summary>
+        /// A result using <see cref="int"/>.
+        /// </summary>
+        /// <param name="code"></param>
         public ComResult(int code)
         {
             _Value = code;
+        }
+
+        /// <summary>
+        /// A result using <see cref="int"/> where the specified
+        /// <see cref="long"/> will be unchecked cast into an <see cref="int"/>.
+        /// </summary>
+        /// <param name="code"></param>
+        public ComResult(long code)
+            : this(unchecked((int) code))
+        {
+
         }
 
         public static implicit operator int(ComResult comResult)
@@ -63,19 +82,6 @@ namespace FoundaryMediaPlayer.Interop.Windows
         public static implicit operator ComResult(HResult code)
         {
             return new ComResult(code);
-        }
-
-        /// <summary>
-        /// Returns whether <paramref name="result"/> is a successful HResult code.
-        /// A null value will be considered a failure with <see cref="HResult.E_UNEXPECTED"/>.
-        /// </summary>
-        /// <param name="result">The result of the COM operation.</param>
-        /// <param name="bStrict">Whether only <see cref="HResult.S_OK"/> is considered a success
-        /// (in other words, whether to treat <see cref="HResult.S_FALSE"/> as a failure).</param>
-        [PublicAPI]
-        public static bool SUCCESS(ComResult result, bool bStrict = false)
-        {
-            return IsSuccess(result, out _, bStrict);
         }
 
         /// <summary>
@@ -169,17 +175,6 @@ namespace FoundaryMediaPlayer.Interop.Windows
         /// </summary>
         /// <param name="result">The result of the COM operation.</param>
         [PublicAPI]
-        public static bool FAILED(ComResult result)
-        {
-            return !IsSuccess(result, out _);
-        }
-
-        /// <summary>
-        /// Returns whether <paramref name="result"/> is an unsuccessful HResult code.
-        /// A null value will be considered a success with <see cref="HResult.E_UNEXPECTED"/>.
-        /// </summary>
-        /// <param name="result">The result of the COM operation.</param>
-        [PublicAPI]
         public static bool FAILED(int? result)
         {
             return !IsSuccess(result, out _);
@@ -252,12 +247,6 @@ namespace FoundaryMediaPlayer.Interop.Windows
             }
 
             return !IsSuccess(action(), out assignResultTo);
-        }
-
-        [SuppressMessage("ReSharper", "RedundantAssignment")]
-        private static bool IsSuccess(ComResult result, out int assignResultTo, bool bStrict = false)
-        {
-            return IsSuccess((int) result, out assignResultTo, bStrict);
         }
 
         [SuppressMessage("ReSharper", "RedundantAssignment")]

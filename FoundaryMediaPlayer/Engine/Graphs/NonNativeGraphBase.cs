@@ -80,10 +80,11 @@ namespace FoundaryMediaPlayer.Engine.Graphs
         public abstract int IsPinConnected(IPin pPin);
         /// <inheritdoc />
         public abstract int ConnectFilter(IBaseFilter pBF, IPin pPinIn);
+
         /// <inheritdoc />
-        public abstract int ConnectFilter(out IPin pPinOut, IBaseFilter pBF);
+        public abstract int ConnectFilter(IPin pPinOut, IBaseFilter pBF);
         /// <inheritdoc />
-        public abstract int ConnectFilterDirect(out IPin pPinOut, IBaseFilter pBF, AMMediaType pmt);
+        public abstract int ConnectFilterDirect(IPin pPinOut, IBaseFilter pBF, AMMediaType pmt);
         /// <inheritdoc />
         public abstract int NukeDownstream(object pUnk);
 
