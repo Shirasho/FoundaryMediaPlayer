@@ -23,6 +23,7 @@ namespace FoundaryMediaPlayer.Interop.Windows
         public const string DirectX = "d3d9.dll";
         [SuppressMessage("ReSharper", "InconsistentNaming")] 
         public const string MSVCRT = "msvcrt.dll";
+        public const string Shell32 = "shell32.dll";
 
         [DllImport(MSVCRT, CallingConvention=CallingConvention.Cdecl, EntryPoint = "memcmp")]
         public static extern int MemoryCompare(byte[] b1, byte[] b2, long count);

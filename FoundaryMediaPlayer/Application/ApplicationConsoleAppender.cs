@@ -107,7 +107,7 @@ namespace FoundaryMediaPlayer.Application
                 message = message.RemoveLast(Environment.NewLine.Length);
             }
             
-            _ConsoleWindow?.Write(message, foreground, background, originalForeground, originalBackground);
+            _ConsoleWindow?.WriteLine(message, foreground, background);
 
             // Write to the output stream
             Console.Write(message);

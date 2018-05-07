@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using FluentAssertions;
 using Foundary;
+using FoundaryMediaPlayer.Application.ConsoleCommands;
 using FoundaryMediaPlayer.Engine;
 using FoundaryMediaPlayer.Windows;
 using FoundaryMediaPlayer.Windows.Contexts;
@@ -42,7 +43,8 @@ namespace FoundaryMediaPlayer.Application
         // let children classes override it.
         protected virtual IApplicationSettings ApplicationSettings { get; } = new FApplicationSettings();
 
-        private bool _bExceptionHandlersBound { get; set; }
+        private bool _bBindingsBound { get; set; }
+        private ICommandParser _CommandParser { get; set; }
 
         public FApplicationBootstrapper(
             FApplication application,
@@ -53,6 +55,8 @@ namespace FoundaryMediaPlayer.Application
 
             Application = application;
             CommandLineOptions = startupCommandLineOptions;
+
+            application.ConsoleWindow.ConsoleOutput.ProcessInputAction = ProcessConsoleCommands;
         }
 
         /// <inheritdoc />
@@ -92,10 +96,10 @@ namespace FoundaryMediaPlayer.Application
         /// </summary>
         public new void Run()
         {
-            if (!_bExceptionHandlersBound)
+            if (!_bBindingsBound)
             {
                 BindExceptionHandlers();
-                _bExceptionHandlersBound = true;
+                _bBindingsBound = true;
             }
 
             base.Run();
@@ -103,10 +107,10 @@ namespace FoundaryMediaPlayer.Application
 
         public override void Run(bool runWithDefaultConfiguration)
         {
-            if (!_bExceptionHandlersBound)
+            if (!_bBindingsBound)
             {
                 BindExceptionHandlers();
-                _bExceptionHandlersBound = true;
+                _bBindingsBound = true;
             }
 
             base.Run(runWithDefaultConfiguration);
@@ -164,6 +168,14 @@ namespace FoundaryMediaPlayer.Application
 
             result.Log($"Starting {os.Name} [{os.Version}] application.", Category.Info, Priority.Low);
 
+            // At this point the logger is ready, so we can create the runtime parser using our
+            // own console host.
+            if (CommandLineOptions.bConsole)
+            {
+                _CommandParser = CommandParser.Create(true);
+                BindRuntimeCommands(_CommandParser);
+            }
+
             return result;
         }
 
@@ -186,7 +198,7 @@ namespace FoundaryMediaPlayer.Application
             ApplicationSettings.Should().NotBeNull();
             ApplicationPaths.Should().NotBeNull();
             CommandLineOptions.Should().NotBeNull();
-            
+
             Kernel.Bind<IMediaEngine>().To<FMediaEngine>().InSingletonScope();
             Kernel.Bind<IApplicationService>().To<ApplicationService>().InSingletonScope();
             Kernel.Bind<IWindowService>().To<FWindowService>().InTransientScope();
@@ -211,6 +223,14 @@ namespace FoundaryMediaPlayer.Application
 
             Kernel.Get<FApplicationThemeManager>().ApplyTheme();
             GInputBindingManager.Initialize(Kernel.Get<IEventAggregator>(), Kernel.Get<FApplicationStore>());
+        }
+
+        protected virtual void BindRuntimeCommands(ICommandParser parser)
+        {
+#if DEBUG
+            parser.Register<FTestCommand>();
+#endif
+            parser.Register<FExitCommand>();
         }
 
         protected void BindExceptionHandlers()
@@ -314,5 +334,19 @@ namespace FoundaryMediaPlayer.Application
 
             return result;
         }
+
+        private void ProcessConsoleCommands(string obj)
+        {
+            try
+            {
+                _CommandParser.Process(args);
+            }
+            catch
+            {
+                _CommandParser.Process("help");
+            }
+        }
+
+        
     }
 }

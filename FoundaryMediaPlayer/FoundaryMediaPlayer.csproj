@@ -118,11 +118,17 @@
     <Reference Include="FluentAssertions, Version=5.3.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.5.3.0\lib\net47\FluentAssertions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Core, Version=0.2.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Core.0.2.13\lib\net45\Foundary.Core.dll</HintPath>
+    <Reference Include="Foundary.Core, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Core.0.2.30\lib\net45\Foundary.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Interfaces, Version=0.2.13.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Interfaces.0.2.13\lib\net45\Foundary.Interfaces.dll</HintPath>
+    <Reference Include="Foundary.Interfaces, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Interfaces.0.2.30\lib\net45\Foundary.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Foundary.Wpf.Controls, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Wpf.Controls.0.2.30\lib\net45\Foundary.Wpf.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Foundary.Wpf.Core, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Wpf.Core.0.2.30\lib\net45\Foundary.Wpf.Core.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.Wpf.DragDrop, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.1.1.0\lib\net46\GongSolutions.Wpf.DragDrop.dll</HintPath>
@@ -226,19 +232,21 @@
     </ApplicationDefinition>
     <Compile Include="Application\ApplicationBootstrapper.cs" />
     <Compile Include="Application\ApplicationConsoleAppender.cs" />
+    <Compile Include="Application\ApplicationConsoleHost.cs" />
     <Compile Include="Application\ApplicationLogger.cs" />
     <Compile Include="Application\ApplicationPaths.cs" />
     <Compile Include="Application\ApplicationSettings.cs" />
     <Compile Include="Application\ApplicationStore.cs" />
     <Compile Include="Application\ApplicationThemeManager.cs" />
     <Compile Include="Application\ApplicationUpdater.cs" />
+    <Compile Include="Application\ConsoleCommands\TestCommand.cs" />
     <Compile Include="Application\EMetroAccent.cs" />
     <Compile Include="Application\EMetroTheme.cs" />
     <Compile Include="Application\IApplicationPaths.cs" />
     <Compile Include="Application\IApplicationSettings.cs" />
     <Compile Include="Application\InputBindingManager.cs" />
     <Compile Include="Application\IWindowService.cs" />
-    <Compile Include="Application\RuntimeCommandLineOptions.cs" />
+    <Compile Include="Application\ConsoleCommands\ExitCommand.cs" />
     <Compile Include="Application\StartupCommandLineOptions.cs" />
     <Compile Include="Application\System\FileReader.cs" />
     <Compile Include="Application\System\FileWriter.cs" />
@@ -405,7 +413,6 @@
     <Compile Include="Windows\ConsoleWindow.xaml.cs">
       <DependentUpon>ConsoleWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Windows\Contexts\ConsoleWindowContext.cs" />
     <Compile Include="Windows\Contexts\ShellWindowContext.cs" />
     <Compile Include="Windows\Contexts\WindowContext.cs" />
     <Compile Include="Windows\Data\ModalMessage.cs" />

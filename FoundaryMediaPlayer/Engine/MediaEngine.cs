@@ -161,7 +161,7 @@ namespace FoundaryMediaPlayer.Engine
 
             OnDispose();
 
-            OutputWindow.DisposeMedia();
+            OutputWindow?.DisposeMedia();
             if (OutputWindow is FullscreenWindow)
             {
                 OutputWindow.Close();
