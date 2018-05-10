@@ -1,28 +1,28 @@
-﻿using log4net;
-using NConsole;
+﻿using System;
+using FluentAssertions;
+using Foundary.CommandParser;
+using Ninject;
 
 namespace FoundaryMediaPlayer.Application
 {
-    public sealed class FApplicationConsoleHost : IConsoleHost
+    /// <summary>
+    /// An application dependency resolver that utilizes the DI container.
+    /// </summary>
+    public sealed class ApplicationDependencyResolver : IDependencyResolver
     {
-        private static ILog Logger { get; } = LogManager.GetLogger(typeof(FApplicationConsoleHost));
+        private IKernel _Kernel {get;}
 
-        /// <inheritdoc />
-        public void WriteMessage(string message)
+        public ApplicationDependencyResolver(IKernel kernel)
         {
-            Logger.Info(message);
+            kernel.Should().NotBeNull();
+
+            _Kernel = kernel;
         }
 
         /// <inheritdoc />
-        public void WriteError(string message)
+        public IConsoleCommand Resolve(Type type)
         {
-            Logger.Error(message);
-        }
-
-        /// <inheritdoc />
-        public string ReadValue(string message)
-        {
-            return null;
+            return _Kernel.Get(type) as IConsoleCommand;
         }
     }
 }

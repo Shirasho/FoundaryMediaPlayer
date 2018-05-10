@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using FluentAssertions;
-using Foundary;
 using FoundaryMediaPlayer.Application;
 using FoundaryMediaPlayer.Events;
 using MahApps.Metro.Controls;
@@ -15,11 +14,8 @@ namespace FoundaryMediaPlayer.Windows
     /// The base class for all windows in the <see cref="Windows"/> namespace
     /// that are a type of <see cref="MetroWindow"/>.
     /// </summary>
-    public abstract class AWindowBase : MetroWindow, IDisposableEx
+    public abstract class AWindowBase : MetroWindow, IDisposable
     {
-        /// <inheritdoc />
-        public bool bDisposed { get; private set; }
-
         /// <summary>
         /// The application event aggregator.
         /// </summary>
@@ -29,6 +25,8 @@ namespace FoundaryMediaPlayer.Windows
         /// The application store.
         /// </summary>
         protected FApplicationStore Store { get; }
+
+        private bool _bDisposed { get; set; }
 
         /// <summary>
         /// 
@@ -55,12 +53,12 @@ namespace FoundaryMediaPlayer.Windows
         /// <inheritdoc />
         public void Dispose()
         {
-            if (!bDisposed)
+            if (!_bDisposed)
             {
                 MonitorKeyBindings(false);
 
                 OnDispose();
-                bDisposed = true;
+                _bDisposed = true;
             }
         }
 

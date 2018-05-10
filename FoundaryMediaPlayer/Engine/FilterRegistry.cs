@@ -42,14 +42,14 @@ namespace FoundaryMediaPlayer.Engine
             }
 
             string filterName;
-            using (var key = new RegistryKeyReference($"CLSID\\{guid}", RegistryHive.ClassesRoot))
+            using (var key = new RegKey($"CLSID\\{guid}", RegistryHive.ClassesRoot))
             {
                 filterName = key.GetString(null);
             }
 
             if (!string.IsNullOrEmpty(filterName))
             {
-                using (var key = new RegistryKeyReference($"CLSID\\{{083863F1-70DE-11d0-BD40-00A0C911CE86}}\\Instance\\{guid}"))
+                using (var key = new RegKey($"CLSID\\{{083863F1-70DE-11d0-BD40-00A0C911CE86}}\\Instance\\{guid}"))
                 {
                     Name = string.IsNullOrWhiteSpace(name) ? (key.GetString("FriendlyName") ?? Name) : Name;
                     var bytes = key.GetBinary("FilterData");

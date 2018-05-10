@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using NConsole;
+using Foundary.CommandParser;
 
 namespace FoundaryMediaPlayer.Application.ConsoleCommands
 {
@@ -9,13 +9,14 @@ namespace FoundaryMediaPlayer.Application.ConsoleCommands
     [Command(Name = "test-console")]
     public class FTestCommand : IConsoleCommand
     {
-        [Argument(Name = "value")]
+        [Argument(LongName = "value")]
         public string TestValue { get; set; }
 
         /// <inheritdoc />
-        public Task<object> RunAsync(CommandLineProcessor processor, IConsoleHost host)
+        public Task<object> RunAsync(ICommandParser parser, object input = null)
         {
-            host.WriteMessage($"Test value: {TestValue}");
+            //TODO: input is DI.
+            //host.WriteMessage($"Test value: {TestValue}");
 
             return Task.FromResult<object>(null);
         }

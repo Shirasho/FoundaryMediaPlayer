@@ -1,10 +1,15 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Reflection;
+using System.Security;
 using System.Threading.Tasks;
 using System.Windows;
 using FluentAssertions;
 using Foundary;
+using Foundary.CommandParser;
 using FoundaryMediaPlayer.Application.ConsoleCommands;
 using FoundaryMediaPlayer.Engine;
 using FoundaryMediaPlayer.Windows;
@@ -42,6 +47,8 @@ namespace FoundaryMediaPlayer.Application
         // We need this before the kernel is set up, so the next best thing is to
         // let children classes override it.
         protected virtual IApplicationSettings ApplicationSettings { get; } = new FApplicationSettings();
+
+        protected virtual IDependencyResolver DependencyResolver { get; private set; }
 
         private bool _bBindingsBound { get; set; }
         private ICommandParser _CommandParser { get; set; }
@@ -94,6 +101,7 @@ namespace FoundaryMediaPlayer.Application
         /// <summary>
         /// Runs the bootstrapper process.
         /// </summary>
+        [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional", Justification = "Exceptions are not thrown at the time of binding.")]
         public new void Run()
         {
             if (!_bBindingsBound)
@@ -104,7 +112,9 @@ namespace FoundaryMediaPlayer.Application
 
             base.Run();
         }
-
+        
+        /// <inheritdoc />
+        [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional", Justification = "Exceptions are not thrown at the time of binding.")]
         public override void Run(bool runWithDefaultConfiguration)
         {
             if (!_bBindingsBound)
@@ -121,6 +131,7 @@ namespace FoundaryMediaPlayer.Application
             return Kernel.Get<ShellWindow>();
         }
 
+        /// <exception cref="InvalidOperationException"><see cref="P:System.Windows.Application.MainWindow" /> is set from an application that's hosted in a browser, such as an XAML browser applications (XBAPs).</exception>
         protected override void InitializeShell()
         {
             base.InitializeShell();
@@ -131,6 +142,13 @@ namespace FoundaryMediaPlayer.Application
             Application.MainWindow?.Show();
         }
 
+        /// <exception cref="IOException">An error occured while loading the log4net configuration file.</exception>
+        /// <exception cref="SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="UnauthorizedAccessException">Access to configuration file is denied. </exception>
+        /// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters. </exception>
+        /// <exception cref="NotSupportedException">Configuration file path contains a colon (:) in the middle of the string. </exception>
+        /// <exception cref="AppDomainUnloadedException">The operation is attempted on an unloaded application domain. </exception>
+        [SuppressMessage("ReSharper", "ExceptionNotDocumentedOptional", Justification = "The inputs will never be null.")]
         protected override ILoggerFacade CreateLogger()
         {
             // We will create our log4net logger here
@@ -168,17 +186,19 @@ namespace FoundaryMediaPlayer.Application
 
             result.Log($"Starting {os.Name} [{os.Version}] application.", Category.Info, Priority.Low);
 
-            // At this point the logger is ready, so we can create the runtime parser using our
-            // own console host.
-            if (CommandLineOptions.bConsole)
-            {
-                _CommandParser = CommandParser.Create(true);
-                BindRuntimeCommands(_CommandParser);
-            }
-
             return result;
         }
 
+        /// <exception cref="ArgumentNullException">Model type is <see langword="null" />. </exception>
+        /// <exception cref="TargetInvocationException">A class initializer is invoked and throws an exception. </exception>
+        /// <exception cref="ArgumentException">
+        ///               Model type represents a generic type that has a pointer type, a <see langword="ByRef" /> type, or <see cref="T:System.Void" /> as one of its type arguments.-or-
+        ///               Model type represents a generic type that has an incorrect number of type arguments.-or-
+        ///               Model type represents a generic type, and one of its type arguments does not satisfy the constraints for the corresponding type parameter.</exception>
+        /// <exception cref="TypeLoadException">
+        ///               Model type represents an array of <see cref="T:System.TypedReference" />. </exception>
+        /// <exception cref="FileLoadException">In the .NET for Windows Store apps or the Portable Class Library, catch the base class exception, <see cref="T:System.IO.IOException" />, instead.The assembly or one of its dependencies was found, but could not be loaded. </exception>
+        /// <exception cref="BadImageFormatException">The assembly or one of its dependencies is not valid. -or-Version 2.0 or later of the common language runtime is currently loaded, and the assembly was compiled with a later version.</exception>
         protected override void ConfigureViewModelLocator()
         {
             ViewModelLocationProvider.SetDefaultViewTypeToViewModelTypeResolver(viewType =>
@@ -194,6 +214,15 @@ namespace FoundaryMediaPlayer.Application
         protected override void ConfigureKernel()
         {
             base.ConfigureKernel();
+
+            DependencyResolver = CreateDependencyResolver();
+
+            // At this point the logger, console, and kernel are ready, so we can create the runtime parser.
+            if (CommandLineOptions.bConsole)
+            {
+                _CommandParser = ConsoleCommandParser.Create(DependencyResolver);
+                BindRuntimeCommands(_CommandParser);
+            }
 
             ApplicationSettings.Should().NotBeNull();
             ApplicationPaths.Should().NotBeNull();
@@ -225,6 +254,11 @@ namespace FoundaryMediaPlayer.Application
             GInputBindingManager.Initialize(Kernel.Get<IEventAggregator>(), Kernel.Get<FApplicationStore>());
         }
 
+        protected virtual IDependencyResolver CreateDependencyResolver()
+        {
+            return new ApplicationDependencyResolver(Kernel);
+        }
+
         protected virtual void BindRuntimeCommands(ICommandParser parser)
         {
 #if DEBUG
@@ -233,6 +267,9 @@ namespace FoundaryMediaPlayer.Application
             parser.Register<FExitCommand>();
         }
 
+        /// <exception cref="Win32Exception">The associated process could not be terminated. -or-The process is terminating.-or- The associated process is a Win16 executable.</exception>
+        /// <exception cref="NotSupportedException">You are attempting to call <see cref="M:System.Diagnostics.Process.Kill" /> for a process that is running on a remote computer. The method is available only for processes running on the local computer.</exception>
+        /// <exception cref="InvalidOperationException">The process has already exited. -or-There is no process associated with this <see cref="T:System.Diagnostics.Process" /> object.</exception>
         protected void BindExceptionHandlers()
         {
             AppDomain.CurrentDomain.UnhandledException += (s, e) =>
@@ -259,6 +296,9 @@ namespace FoundaryMediaPlayer.Application
             };
         }
 
+        /// <exception cref="Win32Exception">The associated process could not be terminated. -or-The process is terminating.-or- The associated process is a Win16 executable.</exception>
+        /// <exception cref="NotSupportedException">You are attempting to call <see cref="M:System.Diagnostics.Process.Kill" /> for a process that is running on a remote computer. The method is available only for processes running on the local computer.</exception>
+        /// <exception cref="InvalidOperationException">The process has already exited. -or-There is no process associated with this <see cref="T:System.Diagnostics.Process" /> object.</exception>
         protected virtual void HandleException(Exception e, string sender, bool bHandled, bool bIsTerminating)
         {
             if (bIsTerminating)
@@ -302,6 +342,14 @@ namespace FoundaryMediaPlayer.Application
             }
         }
 
+        /// <exception cref="DirectoryNotFoundException">The specified path is invalid, such as being on an unmapped drive. </exception>
+        /// <exception cref="SecurityException">The caller does not have the required permission. </exception>
+        /// <exception cref="IOException">The directory cannot be created. </exception>
+        /// <exception cref="ArgumentNullException">Application store path is <see langword="null" />. </exception>
+        /// <exception cref="ArgumentException">The file name is empty, contains only white spaces, or contains invalid characters. </exception>
+        /// <exception cref="UnauthorizedAccessException">Access to application store path is denied. </exception>
+        /// <exception cref="PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length. For example, on Windows-based platforms, paths must be less than 248 characters, and file names must be less than 260 characters. </exception>
+        /// <exception cref="NotSupportedException">Application store path contains a colon (:) in the middle of the string. </exception>
         protected virtual FApplicationStore CreateApplicationStore(IContext activationContext)
         {
             var fileReader = Kernel.Get<IFileReader>();
@@ -335,15 +383,15 @@ namespace FoundaryMediaPlayer.Application
             return result;
         }
 
-        private void ProcessConsoleCommands(string obj)
+        private Task ProcessConsoleCommands(string args)
         {
             try
             {
-                _CommandParser.Process(args);
+                return _CommandParser.ProcessAsync(args);
             }
             catch
             {
-                _CommandParser.Process("help");
+                return _CommandParser.ProcessAsync("help");
             }
         }
 

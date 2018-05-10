@@ -1093,7 +1093,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
 
             if (file == null || !file.Exists)
             {
-                using (var reg = new RegistryKeyReference($"{protocol}\\Extensions", RegistryHive.ClassesRoot))
+                using (var reg = new RegKey($"{protocol}\\Extensions", RegistryHive.ClassesRoot))
                 {
                     if (Guid.TryParse(reg.GetString(ext), out Guid guid))
                     {
@@ -1101,7 +1101,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                     }
                 }
 
-                using (var reg = new RegistryKeyReference($"{protocol}", RegistryHive.ClassesRoot))
+                using (var reg = new RegKey($"{protocol}", RegistryHive.ClassesRoot))
                 {
                     if (Guid.TryParse(reg.GetString("Source Filter"), out Guid guid))
                     {
@@ -1111,7 +1111,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             }
             else
             {
-                using (var key = new RegistryKeyReference("Media Type", RegistryHive.ClassesRoot))
+                using (var key = new RegKey("Media Type", RegistryHive.ClassesRoot))
                 {
                     foreach (var enumKey in key.IterateSubKeys())
                     {
@@ -1120,7 +1120,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
                             continue;
                         }
 
-                        using (var subkeyLevel1 = new RegistryKeyReference(key, enumKey.Name))
+                        using (var subkeyLevel1 = new RegKey(key, enumKey.Name))
                         {
                             foreach (var enumSubKey in subkeyLevel1.IterateSubKeys())
                             {
@@ -1150,7 +1150,7 @@ namespace FoundaryMediaPlayer.Engine.Graphs
             // Try and get the filters by the extension.
             if (!string.IsNullOrEmpty(ext))
             {
-                using (var extKey = new RegistryKeyReference($"Media Type\\Extensions\\{ext}", RegistryHive.ClassesRoot))
+                using (var extKey = new RegKey($"Media Type\\Extensions\\{ext}", RegistryHive.ClassesRoot))
                 {
                     var sourceFilterGuidRaw = extKey.GetString("Source Filter");
                     if (!string.IsNullOrWhiteSpace(sourceFilterGuidRaw) &&

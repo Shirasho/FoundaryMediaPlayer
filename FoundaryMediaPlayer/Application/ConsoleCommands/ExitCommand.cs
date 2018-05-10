@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
-using NConsole;
+using Foundary.CommandParser;
+using JetBrains.Annotations;
 
 namespace FoundaryMediaPlayer.Application.ConsoleCommands
 {
@@ -10,7 +11,8 @@ namespace FoundaryMediaPlayer.Application.ConsoleCommands
     public class FExitCommand : IConsoleCommand
     {
         /// <inheritdoc />
-        public Task<object> RunAsync(CommandLineProcessor processor, IConsoleHost host)
+        [ContractAnnotation("=> halt")]
+        public Task<object> RunAsync(ICommandParser parser, object input = null)
         {
             FApplication.Current.Shutdown();
 

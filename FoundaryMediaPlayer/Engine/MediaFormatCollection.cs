@@ -402,7 +402,7 @@ namespace FoundaryMediaPlayer.Engine
         private bool AreExtensionsHidden()
         {
             int? bAreExtensionsHidden;
-            using (var key = new RegistryKeyReference("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced").Open())
+            using (var key = new RegKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced").Open())
             {
                 bAreExtensionsHidden = key.GetInt("HideFileExt");
             }

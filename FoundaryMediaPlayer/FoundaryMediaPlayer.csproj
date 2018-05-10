@@ -62,6 +62,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -73,6 +74,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -111,6 +113,7 @@
     </Reference>
     <Reference Include="Costura, Version=2.0.0.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
       <HintPath>..\packages\Costura.Fody.2.0.0\lib\net452\Costura.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="DirectShowLib, Version=2.1.0.1599, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\DirectShowLib.1.0.0\lib\DirectShowLib.dll</HintPath>
@@ -118,23 +121,30 @@
     <Reference Include="FluentAssertions, Version=5.3.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.5.3.0\lib\net47\FluentAssertions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Core, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Core.0.2.30\lib\net45\Foundary.Core.dll</HintPath>
+    <Reference Include="Foundary.CommandParser, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.CommandParser.0.3.1\lib\net47\Foundary.CommandParser.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Interfaces, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Interfaces.0.2.30\lib\net45\Foundary.Interfaces.dll</HintPath>
+    <Reference Include="Foundary.Core, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Core.0.3.1\lib\net47\Foundary.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Wpf.Controls, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Wpf.Controls.0.2.30\lib\net45\Foundary.Wpf.Controls.dll</HintPath>
+    <Reference Include="Foundary.Extensions, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Extensions.0.3.1\lib\net47\Foundary.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Wpf.Core, Version=0.2.30.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Wpf.Core.0.2.30\lib\net45\Foundary.Wpf.Core.dll</HintPath>
+    <Reference Include="Foundary.Interfaces, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Interfaces.0.3.1\lib\net47\Foundary.Interfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Foundary.Wpf.Controls, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Wpf.Controls.0.3.1\lib\net47\Foundary.Wpf.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="Foundary.Wpf.Core, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Wpf.Core.0.3.1\lib\net47\Foundary.Wpf.Core.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.Wpf.DragDrop, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.1.1.0\lib\net46\GongSolutions.Wpf.DragDrop.dll</HintPath>
     </Reference>
     <Reference Include="JetBrains.Annotations, Version=11.1.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325, processorArchitecture=MSIL">
       <HintPath>..\packages\JetBrains.Annotations.11.1.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
@@ -205,6 +215,9 @@
     </Reference>
     <Reference Include="System.Runtime.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.Extensions.4.3.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.4.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Prism.Wpf.6.3.0\lib\net45\System.Windows.Interactivity.dll</HintPath>

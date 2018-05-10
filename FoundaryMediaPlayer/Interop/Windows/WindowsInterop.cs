@@ -233,7 +233,7 @@ namespace FoundaryMediaPlayer.Interop.Windows
 
             try
             {
-                using (var key = new RegistryKeyReference($"CLSID\\{{083863F1-70DE-11d0-BD40-00A0C911CE86}}\\Instance\\{clsid:B}", RegistryHive.ClassesRoot).Open())
+                using (var key = new RegKey($"CLSID\\{{083863F1-70DE-11d0-BD40-00A0C911CE86}}\\Instance\\{clsid:B}", RegistryHive.ClassesRoot).Open())
                 {
                     return key != null && key.Exists();
                 }
