@@ -121,23 +121,23 @@
     <Reference Include="FluentAssertions, Version=5.3.0.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.5.3.0\lib\net47\FluentAssertions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.CommandParser, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.CommandParser.0.3.1\lib\net47\Foundary.CommandParser.dll</HintPath>
+    <Reference Include="Foundary.CommandParser, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.CommandParser.0.3.2\lib\net47\Foundary.CommandParser.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Core, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Core.0.3.1\lib\net47\Foundary.Core.dll</HintPath>
+    <Reference Include="Foundary.Core, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Core.0.3.2\lib\net47\Foundary.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Extensions, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Extensions.0.3.1\lib\net47\Foundary.Extensions.dll</HintPath>
+    <Reference Include="Foundary.Extensions, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Extensions.0.3.2\lib\net47\Foundary.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Interfaces, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Interfaces.0.3.1\lib\net47\Foundary.Interfaces.dll</HintPath>
+    <Reference Include="Foundary.Interfaces, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Interfaces.0.3.2\lib\net47\Foundary.Interfaces.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Wpf.Controls, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Wpf.Controls.0.3.1\lib\net47\Foundary.Wpf.Controls.dll</HintPath>
+    <Reference Include="Foundary.Wpf.Controls, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Wpf.Controls.0.3.2\lib\net47\Foundary.Wpf.Controls.dll</HintPath>
     </Reference>
-    <Reference Include="Foundary.Wpf.Core, Version=0.3.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Foundary.Wpf.Core.0.3.1\lib\net47\Foundary.Wpf.Core.dll</HintPath>
+    <Reference Include="Foundary.Wpf.Core, Version=0.3.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Foundary.Wpf.Core.0.3.2\lib\net47\Foundary.Wpf.Core.dll</HintPath>
     </Reference>
     <Reference Include="GongSolutions.Wpf.DragDrop, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\gong-wpf-dragdrop.1.1.0\lib\net46\GongSolutions.Wpf.DragDrop.dll</HintPath>
